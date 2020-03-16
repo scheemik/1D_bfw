@@ -20,15 +20,16 @@ import logging
 logger = logging.getLogger(__name__)
 
 # Bases and domain
-x_basis = de.Fourier('x', 1024, interval=(-2, 16), dealias=3/2)
+x_basis = de.Fourier('x', 1024, interval=(-2, 16))#, dealias=3/2)
+# something weird happens when I use dealias, the number of grid points in x don't line up anymore. I put in 1024 but get back 1536
 domain = de.Domain([x_basis], np.float64)
 
 # Problem parameters
 a=1.
 
 #X grid
-#x = domain.grids(scales=domain.dealias)
-x = domain.grid(0, scales=domain.dealias)
+#x = domain.grid(0, scales=domain.dealias)
+x = domain.grid(0)
 
 #define forcing function
 def forcing(x,solver):
@@ -101,7 +102,10 @@ finally:
 
 # Create space-time plot
 u_array = np.array(u_list)
+print('shape of u:',u_array.shape)
 t_array = np.array(t_list)
+print('shape of t:',t_array.shape)
+print('shape of x:',x.shape)
 xmesh, ymesh = quad_mesh(x=x, y=t_array)
 plt.figure()
 plt.pcolormesh(xmesh, ymesh, u_array, cmap='RdBu_r')
@@ -109,5 +113,5 @@ plt.axis(pad_limits(xmesh, ymesh))
 plt.colorbar()
 plt.xlabel('x')
 plt.ylabel('t')
-plt.title('Forced 1D Wave, (a,F)=(%g,%g)' %(problem.parameters['a'], problem.parameters['F']))
+plt.title('Forced 1D Wave, (a,F)=(%g,%g)' %(problem.parameters['a'], problem.parameters['a']))
 plt.savefig('f_1D_wave.png')
