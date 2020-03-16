@@ -19,58 +19,69 @@ from dedalus.core.operators import GeneralFunction
 import logging
 logger = logging.getLogger(__name__)
 
+###############################################################################
+
 # Domain parameters
 nz = 1024
-z0, zf = -2, 16
+z0, zf = -2, 0
+
+# Problem parameters
+a=1.
+lambda_z = 1.0
+m = 2*np.pi / lambda_z
+T = 3.0
+omega = 2*np.pi / T
 
 # Run parameters
-# stop_sim_time = 10*T
-dt = 2e-3
+sim_time_stop = 3*T
+dt = 2e-2
 adapt_dt = False
 snap_dt = 3*dt
 snap_max_writes = 100
 # Output
 fh_mode = 'overwrite' # or 'append'
 
+###############################################################################
+
 # Bases and domain
 z_basis = de.Fourier('z', nz, interval=(z0, zf), dealias=3/2)
 # something weird happens when I use dealias, the number of grid points in x don't line up anymore. I put in 1024 but get back 1536
 domain = de.Domain([z_basis], np.float64)
-
-# Problem parameters
-a=1.
 
 #Z grid
 z_da = domain.grid(0, scales=domain.dealias)
 z = domain.grid(0)
 
 #define forcing function
-def forcing(z_da,solver):
-     return np.cos(z_da-solver.sim_time);
+def forcing(z_da, m, omega, solver): #solver.sim_time = t
+     return np.cos(-m*z_da - omega*solver.sim_time);
 #     return solver.sim_time;
 #     return np.cos(z);
 
 #assign GeneralFunction to parameter 'F'
 F= GeneralFunction(domain,'g',forcing,args=[])
 
+###############################################################################
+
 # Problem
 problem = de.IVP(domain, variables=['w', 'wt', 'wz'])
 
 problem.parameters['a'] = a
 problem.parameters['F'] = F
-problem.add_equation("dt(wt) + a*dz(wz)= F")
+problem.add_equation("dt(wt) + a*dz(wz)= F-w")
 problem.add_equation("wt - dt(w) = 0")
 problem.add_equation("wz + a*dz(w) = 0")
 
 # Build solver
 solver = problem.build_solver(de.timesteppers.SBDF2)
 logger.info('Solver built')
+solver.stop_sim_time  = sim_time_stop
 solver.stop_wall_time = 180 * 60.0 # length in minutes * 60 = length in seconds
-solver.stop_iteration = 10000 # np.inf
+solver.stop_iteration = np.inf
 
 #pass the relevant arguments to the forcing function
-F.args = [z_da,solver]
-F.original_args = [z_da,solver]
+F.args = [z_da, m, omega, solver]
+F.original_args = [z_da, m, omega, solver]
 
 # Above code modified from here: https://groups.google.com/forum/#!searchin/dedalus-users/%22wave$20equation%22%7Csort:date/dedalus-users/TJEOwHEDghU/g2x00YGaAwAJ
 
