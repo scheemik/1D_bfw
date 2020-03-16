@@ -1,7 +1,7 @@
 #!/bin/bash
 # A bash script to run the Dedalus python code
-# Takes in arguments:
-#	$ sh run.sh -n <name of experiment> <- not optional
+# Takes in optional arguments:
+#	$ sh run.sh -n <name of experiment>
 #				-c <cores>
 #				-v <version: what scripts to run>
 
@@ -29,8 +29,8 @@ done
 # check to see if arguments were passed
 if [ -z "$NAME" ]
 then
-	echo "-n, No name specified, aborting script"
-	exit 1
+	NAME=$DATETIME
+	echo "-n, No name specified, using NAME=$NAME"
 fi
 if [ -z "$VER" ]
 then
@@ -39,7 +39,7 @@ then
 fi
 if [ -z "$CORES" ]
 then
-	CORES=2
+	CORES=1
 	echo "-c, No number of cores specified, using CORES=$CORES"
 fi
 
@@ -47,8 +47,10 @@ fi
 
 # The command and arguments for running scripts with mpi
 mpiexec_command="mpiexec"
+# The version of python to use
+python_command="python3"
 # Name of the main code file
-code_file='main.py'
+code_file='Forced_1D_wave_eq.py'
 # Path to snapshot files
 snapshot_path="snapshots"
 # Name of merging file
@@ -76,8 +78,13 @@ then
 		rm -rf $snapshot_path
 	fi
     echo "Running Dedalus script for local pc"
-    # mpiexec uses -n flag for number of processes to use
-    ${mpiexec_command} -n $CORES python3 $code_file
+	if [ $CORES -eq 1 ]
+	then
+		${python_command} $code_file
+	else
+	    # mpiexec uses -n flag for number of processes to use
+	    ${mpiexec_command} -n $CORES ${python_command} $code_file
+	fi
     echo ""
 	echo 'Done running script'
 fi
@@ -124,7 +131,7 @@ then
 	fi
 fi
 
-
+exit 0
 ###############################################################################
 # plot frames - note: already checked if snapshots exist in step above
 #	if (VER = 0, 2)
