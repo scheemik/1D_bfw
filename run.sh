@@ -56,7 +56,7 @@ snapshot_path="snapshots"
 # Name of merging file
 merge_file="merge.py"
 # Name of plotting file
-plot_file="plot_t_slices.py" #"post-process.py"
+plot_file="plot_slices.py" #"post-process.py"
 # Name of output directory
 output_dir="outputs"
 # Path to frames
@@ -131,7 +131,6 @@ then
 	fi
 fi
 
-exit 0
 ###############################################################################
 # plot frames - note: already checked if snapshots exist in step above
 #	if (VER = 0, 2)
@@ -145,7 +144,7 @@ then
 		rm -rf frames
 	fi
 	echo "Plotting 2d slices"
-	${mpiexec_command} -n $CORES python3 $plot_file $NAME $snapshot_path/*.h5
+	${mpiexec_command} -n $CORES ${python_command} $plot_file $NAME $snapshot_path/*.h5
 	echo 'Done plotting frames'
 fi
 
@@ -173,7 +172,7 @@ then
 	if [ -e $frames_path ] && [ ${#files[@]} -gt 0 ]
 	then
 		echo "Executing gif script"
-		python3 $gif_cre_file $NAME $output_dir/$gif_name $frames_path
+		${python_command} $gif_cre_file $NAME $output_dir/$gif_name $frames_path
 	else
 		echo "No frames found"
 	fi
