@@ -29,12 +29,12 @@ z0, zf = -2, 0
 a=1.
 lambda_z = 1.0
 m = 2*np.pi / lambda_z
-T = 3.0
+T = 9.0
 omega = 2*np.pi / T
 
 # Run parameters
 sim_time_stop = 3*T
-dt = 2e-2
+dt = 0.125 #2e-2
 adapt_dt = False
 snap_dt = 3*dt
 snap_max_writes = 100
@@ -68,7 +68,7 @@ problem = de.IVP(domain, variables=['w', 'wt', 'wz'])
 
 problem.parameters['a'] = a
 problem.parameters['F'] = F
-problem.add_equation("dt(wt) + a*dz(wz)= F-w")
+problem.add_equation("dt(wt) + a*dz(wz)= F")
 problem.add_equation("wt - dt(w) = 0")
 problem.add_equation("wz + a*dz(w) = 0")
 
@@ -124,7 +124,7 @@ try:
     start_time = time.time()
     while solver.proceed:
         solver.step(dt)
-        if solver.iteration % 20 == 0:
+        if solver.iteration % 1 == 0:
             w.set_scales(1)
             w_list.append(np.copy(w['g']))
             t_list.append(solver.sim_time)
