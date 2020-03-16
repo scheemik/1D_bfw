@@ -19,8 +19,21 @@ from dedalus.core.operators import GeneralFunction
 import logging
 logger = logging.getLogger(__name__)
 
+# Domain parameters
+nz = 1024
+z0, zf = -2, 16
+
+# Run parameters
+# stop_sim_time = 10*T
+dt = 2e-3
+adapt_dt = False
+snap_dt = 3*dt
+snap_max_writes = 100
+# Output
+fh_mode = 'overwrite' # or 'append'
+
 # Bases and domain
-z_basis = de.Fourier('z', 1024, interval=(-2, 16), dealias=3/2)
+z_basis = de.Fourier('z', nz, interval=(z0, zf), dealias=3/2)
 # something weird happens when I use dealias, the number of grid points in x don't line up anymore. I put in 1024 but get back 1536
 domain = de.Domain([z_basis], np.float64)
 
@@ -51,8 +64,9 @@ problem.add_equation("wz + a*dz(w) = 0")
 
 # Build solver
 solver = problem.build_solver(de.timesteppers.SBDF2)
-solver.stop_wall_time = 10000
-solver.stop_iteration = 10000
+logger.info('Solver built')
+solver.stop_wall_time = 180 * 60.0 # length in minutes * 60 = length in seconds
+solver.stop_iteration = 10000 # np.inf
 
 #pass the relevant arguments to the forcing function
 F.args = [z_da,solver]
@@ -72,13 +86,28 @@ w.differentiate('z', out=wz)
 wt['g'] = 0.0
 #w.differentiate('t', out=wt)
 
+###############################################################################
+# Analysis
+def add_new_file_handler(snapshot_directory='snapshots/new', sdt=snap_dt):
+    return solver.evaluator.add_file_handler(snapshot_directory, sim_dt=sdt, max_writes=snap_max_writes, mode=fh_mode)
+
+# Add file handler for snapshots and output state of variables
+snapshots = add_new_file_handler('snapshots')
+snapshots.add_system(solver.state)
+
+# Add file handler for Complex Demodulation (CD)
+# CD = add_new_file_handler('snapshots/CD')
+# CD.add_task("w_g", layout='g', name='w_g')
+# CD.add_task("w_c", layout='c', name='w_c')
+
+###############################################################################
+
 # Store data for final plot
 w.set_scales(1)
 w_list = [np.copy(w['g'])]
 t_list = [solver.sim_time]
 
 # Main loop
-dt = 2e-3
 try:
     logger.info('Starting loop')
     start_time = time.time()
@@ -100,12 +129,14 @@ finally:
     logger.info('Run time: %.2f sec' %(end_time-start_time))
     logger.info('Run time: %f cpu-hr' %((end_time-start_time)/60/60*domain.dist.comm_cart.size))
 
+
 # Create space-time plot
 w_array = np.transpose(np.array(w_list))
 print('shape of w:', w_array.shape)
 t_array = np.array(t_list)
 print('shape of t:',t_array.shape)
 print('shape of z:',z.shape)
+
 xmesh, ymesh = quad_mesh(x=t_array, y=z)
 plt.figure()
 plt.pcolormesh(xmesh, ymesh, w_array, cmap='RdBu_r')
