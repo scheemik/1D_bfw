@@ -20,7 +20,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 # Bases and domain
-z_basis = de.Fourier('z', 1024, interval=(-2, 16))#, dealias=3/2)
+z_basis = de.Fourier('z', 1024, interval=(-2, 16), dealias=3/2)
 # something weird happens when I use dealias, the number of grid points in x don't line up anymore. I put in 1024 but get back 1536
 domain = de.Domain([z_basis], np.float64)
 
@@ -28,12 +28,12 @@ domain = de.Domain([z_basis], np.float64)
 a=1.
 
 #Z grid
-#z = domain.grid(0, scales=domain.dealias)
+z_da = domain.grid(0, scales=domain.dealias)
 z = domain.grid(0)
 
 #define forcing function
-def forcing(z,solver):
-     return np.cos(z-solver.sim_time);
+def forcing(z_da,solver):
+     return np.cos(z_da-solver.sim_time);
 #     return solver.sim_time;
 #     return np.cos(z);
 
@@ -55,8 +55,8 @@ solver.stop_wall_time = 10000
 solver.stop_iteration = 10000
 
 #pass the relevant arguments to the forcing function
-F.args = [z,solver]
-F.original_args = [z,solver]
+F.args = [z_da,solver]
+F.original_args = [z_da,solver]
 
 # Above code modified from here: https://groups.google.com/forum/#!searchin/dedalus-users/%22wave$20equation%22%7Csort:date/dedalus-users/TJEOwHEDghU/g2x00YGaAwAJ
 
@@ -67,7 +67,7 @@ w  = solver.state['w']
 wt = solver.state['wt']
 wz = solver.state['wz']
 
-w['g'] = 0.0
+w['g'] = 0.0*z
 w.differentiate('z', out=wz)
 wt['g'] = 0.0
 #w.differentiate('t', out=wt)
