@@ -1,7 +1,7 @@
 """
 1D Forced wave equation:
 
-d_{tt}w + a*d_{zz}w = F
+d_{tt}w + a*d_{zz}w = F(z, t)
 
 This script should be ran serially (because it is 1D), and creates a space-time
 plot of the computed solution.
