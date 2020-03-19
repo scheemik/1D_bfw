@@ -22,13 +22,12 @@ x_basis = de.Fourier('x', 1024, interval=(-2, 8), dealias=3/2)
 domain = de.Domain([x_basis], np.float64)
 
 # Problem
-problem = de.IVP(domain, variables=['u', 'ux'])
+problem = de.IVP(domain, variables=['u', 'ux', 'uxx'])
 problem.parameters['a'] = 2e-4
 problem.parameters['b'] = 1e-4
-# problem.add_equation("dt(u) - a*dx(ux) - b*dx(uxx) = -u*ux")
-# problem.add_equation("ux - dx(u) = 0")
-# problem.add_equation("uxx - dx(ux) = 0")
-problem.add_equation("dt(dt(u)) + (a**2) * dx(ux) = 0")
+problem.add_equation("dt(u) - a*dx(ux) - b*dx(uxx) = -u*ux")
+problem.add_equation("ux - dx(u) = 0")
+problem.add_equation("uxx - dx(ux) = 0")
 
 # Build solver
 solver = problem.build_solver(de.timesteppers.SBDF2)
@@ -39,12 +38,12 @@ solver.stop_iteration = 5000
 x = domain.grid(0)
 u = solver.state['u']
 ux = solver.state['ux']
-# uxx = solver.state['uxx']
+uxx = solver.state['uxx']
 
 n = 20
 u['g'] = np.log(1 + np.cosh(n)**2/np.cosh(n*x)**2) / (2*n)
 u.differentiate(0, out=ux)
-# ux.differentiate(0, out=uxx)
+ux.differentiate(0, out=uxx)
 
 # Store data for final plot
 u.set_scales(1)
