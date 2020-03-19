@@ -38,7 +38,7 @@ if not os.path.exists(output_path):
         os.makedirs(output_path)
 
 # Labels
-hori_label = r'$x$ (m)'
+hori_label = r'$w$ (m/s)'
 vert_label = r'$z$ (m)'
 
 # Parameters

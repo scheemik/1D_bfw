@@ -24,6 +24,7 @@ logger = logging.getLogger(__name__)
 # Domain parameters
 nz = 1024
 z0, zf = -2, 0
+Lz = zf - z0
 
 # Problem parameters
 a=1.
@@ -52,29 +53,71 @@ domain = de.Domain([z_basis], np.float64)
 z_da = domain.grid(0, scales=domain.dealias)
 z = domain.grid(0)
 
-bf_array = [0]
-#define forcing function
-def forcing(z_da, m, omega, solver): #solver.sim_time = t
-    win_f = z_da*0
-    win_f[-1] = 1.0
-    force_array = win_f*np.sin(-m*z_da - omega*solver.sim_time)
-    bf_array.append(force_array[-1])
-    return force_array;
-#     return np.cos(-m*z_da - omega*solver.sim_time)
-#     return solver.sim_time;
-#     return np.cos(z);
-
-#assign GeneralFunction to parameter 'F'
-F= GeneralFunction(domain,'g',forcing,args=[])
-
-###############################################################################
-
-# Problem
+# Define problem
 problem = de.IVP(domain, variables=['w', 'wt', 'wz'])
 
+###############################################################################
+# Boundary forcing window
+win_bf = domain.new_field(name = 'win_bf')
+# amplitude
+a_bf = 1.0
+# Centered around
+z_cbf = -Lz/16
+# Full width at half max
+b_bf = Lz/32
+# The equation for the window in z
+win_bf['g'] = 1#a_bf*np.exp(-4*np.log(2)*((z - z_cbf)/b_bf)**2)
+problem.parameters['win_bf'] = win_bf
+
+# Sponge window
+win_sp = domain.new_field(name = 'win_sp')
+# amplitude
+a_sp = 1.0
+# Centered around
+z_csp = -15*Lz/16
+# Full width at half max
+b_sp = Lz/32
+win_sp['g'] = a_sp*np.exp(-4*np.log(2)*((z - z_csp)/b_sp)**2)
+problem.parameters['win_sp'] = win_sp
+
+# bf_array = [0]
+# #define forcing function
+# def forcing(z_da, m, omega, solver): #solver.sim_time = t
+#     win_f = z_da*0
+#     win_f[-2] = 1.0
+#     force_array = win_f*np.sin(-m*z_da - omega*solver.sim_time)
+#     bf_array.append(force_array[-2])
+#     return force_array;
+# #     return np.cos(-m*z_da - omega*solver.sim_time)
+# #     return solver.sim_time;
+# #     return np.cos(z);
+#
+# #assign GeneralFunction to parameter 'F'
+# F = GeneralFunction(domain,'g',forcing,args=[])
+#
+# # Create sponge term
+# sp_array = [0]
+# #define forcing function
+# def win_sp(z_da):
+#     win_s = z_da*0 + 1.0
+#     win_s[0] = 0.0
+#     return win_s;
+# #assign GeneralFunction to parameter 'S'
+# S = GeneralFunction(domain,'g',win_sp,args=[])
+
+###############################################################################
+# Define parameters and equations
+
 problem.parameters['a'] = a
-problem.parameters['F'] = F
-problem.add_equation("dt(wt) + a*dz(wz)= F")
+problem.parameters['m'] = m
+problem.parameters['omega'] = omega
+# problem.parameters['F'] = F
+# problem.parameters['S'] = S
+problem.parameters['tau'] = 1.0
+problem.substitutions['bf_term'] = " win_bf * (a*sin(-m*z - omega*t) - w)"
+problem.substitutions['sp_term'] = "-win_sp * w / tau"
+
+problem.add_equation("dt(wt) + a*dz(wz)= bf_term + sp_term")
 problem.add_equation("wt - dt(w) = 0")
 problem.add_equation("wz + a*dz(w) = 0")
 
@@ -85,9 +128,13 @@ solver.stop_sim_time  = sim_time_stop
 solver.stop_wall_time = 180 * 60.0 # length in minutes * 60 = length in seconds
 solver.stop_iteration = np.inf
 
-#pass the relevant arguments to the forcing function
-F.args = [z_da, m, omega, solver]
-F.original_args = [z_da, m, omega, solver]
+# #pass the relevant arguments to the forcing function
+# F.args = [z_da, m, omega, solver]
+# F.original_args = [z_da, m, omega, solver]
+#
+# #pass the relevant arguments to the sponge function
+# S.args = [z_da]
+# S.original_args = [z_da]
 
 # Above code modified from here: https://groups.google.com/forum/#!searchin/dedalus-users/%22wave$20equation%22%7Csort:date/dedalus-users/TJEOwHEDghU/g2x00YGaAwAJ
 
@@ -174,10 +221,10 @@ plt.title(r'Forced 1D Wave, $(a,m,\omega)$=(%g,%g,%g)' %(problem.parameters['a']
 plt.savefig('f_1D_wave.png')
 
 # plot forcing at boundary vs. times
-plt.clf()
-plt.figure()
-plt.plot(t_array, bf_array)
-plt.xlabel('t')
-plt.ylabel('Forcing amplitude')
-plt.title(r'Boundary forcing vs. time, $(a,m,\omega)$=(%g,%g,%g)' %(problem.parameters['a'], m, omega))
-plt.savefig('f_1D_boundary.png')
+# plt.clf()
+# plt.figure()
+# plt.plot(t_array, bf_array)
+# plt.xlabel('t')
+# plt.ylabel('Forcing amplitude')
+# plt.title(r'Boundary forcing vs. time, $(a,m,\omega)$=(%g,%g,%g)' %(problem.parameters['a'], m, omega))
+# plt.savefig('f_1D_boundary.png')
