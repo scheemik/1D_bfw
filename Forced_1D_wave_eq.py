@@ -52,9 +52,15 @@ domain = de.Domain([z_basis], np.float64)
 z_da = domain.grid(0, scales=domain.dealias)
 z = domain.grid(0)
 
+bf_array = [0]
 #define forcing function
 def forcing(z_da, m, omega, solver): #solver.sim_time = t
-     return np.cos(-m*z_da - omega*solver.sim_time);
+    win_f = z_da*0
+    win_f[-1] = 1.0
+    force_array = win_f*np.sin(-m*z_da - omega*solver.sim_time)
+    bf_array.append(force_array[-1])
+    return force_array;
+#     return np.cos(-m*z_da - omega*solver.sim_time)
 #     return solver.sim_time;
 #     return np.cos(z);
 
@@ -143,17 +149,35 @@ finally:
 
 # Create space-time plot
 w_array = np.transpose(np.array(w_list))
-print('shape of w:', w_array.shape)
 t_array = np.array(t_list)
-print('shape of t:',t_array.shape)
-print('shape of z:',z.shape)
+
+# print('shape of w:', w_array.shape)
+# print('shape of t:',t_array.shape)
+# print('shape of z:',z.shape)
 
 xmesh, ymesh = quad_mesh(x=t_array, y=z)
 plt.figure()
-plt.pcolormesh(xmesh, ymesh, w_array, cmap='RdBu_r')
+im = plt.pcolormesh(xmesh, ymesh, w_array, cmap='RdBu_r')
 plt.axis(pad_limits(xmesh, ymesh))
+
+# Find max of absolute value for colorbar for limits symmetric around zero
+cmax = max(abs(w_array.flatten()))
+if cmax==0.0:
+    cmax = 0.001 # to avoid the weird jump with the first frame
+# Set upper and lower limits on colorbar
+im.set_clim(-cmax, cmax)
+
 plt.colorbar()
 plt.xlabel('t')
 plt.ylabel('z')
-plt.title('Forced 1D Wave, (a,F)=(%g,%g)' %(problem.parameters['a'], problem.parameters['a']))
+plt.title(r'Forced 1D Wave, $(a,m,\omega)$=(%g,%g,%g)' %(problem.parameters['a'], m, omega))
 plt.savefig('f_1D_wave.png')
+
+# plot forcing at boundary vs. times
+plt.clf()
+plt.figure()
+plt.plot(t_array, bf_array)
+plt.xlabel('t')
+plt.ylabel('Forcing amplitude')
+plt.title(r'Boundary forcing vs. time, $(a,m,\omega)$=(%g,%g,%g)' %(problem.parameters['a'], m, omega))
+plt.savefig('f_1D_boundary.png')

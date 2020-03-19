@@ -47,9 +47,10 @@ tasks = ['w'] # usually 'b', 'p', 'u', or 'w'
 rows = 1
 cols = 1
 cmap = 'RdBu_r'
-n_ticks = 5
+n_x_ticks = 3
+n_z_ticks = 5
 n_cb_ticks = 3
-round_to_decimal = 1
+round_to_decimal = 3
 title_size = 'medium'
 suptitle_size = 'large'
 T = 8.885765876316732
@@ -78,6 +79,7 @@ def plot_task(fig, axes, rows, cols, time_i, task_j, z_ax, dsets, cmap, AR):
         xmax = 0.001 # to avoid the weird jump with the first frame
     # format range of plot extent
     ax.set_xlim(-xmax, xmax)
+    ax.set_ylim(z_ax[0], z_ax[-1])
     # format axis labels and ticks
     format_labels_and_ticks(ax)
     # Set aspect ratio for plot
@@ -93,12 +95,12 @@ def format_labels_and_ticks(ax):
     x0, xf = ax.get_xlim()
     x0 = round(x0, round_to_decimal)
     xf = round(xf, round_to_decimal)
-    ax.xaxis.set_ticks(np.linspace(x0, xf, n_ticks))
+    ax.xaxis.set_ticks([x0, 0.0, xf])
     ax.xaxis.set_major_formatter(ticker.FuncFormatter(latex_exp))
     z0, zf = ax.get_ylim()
     z0 = round(z0, round_to_decimal)
     zf = round(zf, round_to_decimal)
-    ax.yaxis.set_ticks(np.linspace(z0, zf, n_ticks))
+    ax.yaxis.set_ticks(np.linspace(z0, zf, n_z_ticks))
     ax.yaxis.set_major_formatter(ticker.FuncFormatter(latex_exp))
 
 # Saves figure as a frame
