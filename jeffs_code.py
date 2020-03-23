@@ -72,7 +72,7 @@ problem.parameters['ramptime'] = ramptime
 
 # hyper viscosity?
 #problem.substitutions['dis(A)'] = "mu*(dx(dx(A)) + dy(dy(A)))"
-problem.substitutions['dis(A)'] = "-mu*(dx(dx((dx(dx(A))))) + dy(dy(dy(dy(A)))))"
+problem.substitutions['dis(A)'] = "-mu*(dx(dx((dx(dx(A))))) + dy(dy(dy(dy(A)))))" # "-mu*d(A, x=4)
 
 # Main equation, with linear terms on the LHS and nonlinear terms on the RHS
 problem.add_equation("dt(u) -f*v + g*dx(h) - dis(u) = \
