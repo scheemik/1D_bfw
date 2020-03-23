@@ -56,7 +56,7 @@ z_da = domain.grid(0, scales=domain.dealias)
 z = domain.grid(0)
 
 # Define problem
-problem = de.IVP(domain, variables=['w', 'wt', 'wz'])
+problem = de.IVP(domain, variables=['b', 'p', 'u', 'w'])
 
 ###############################################################################
 # Boundary forcing window
@@ -119,9 +119,16 @@ problem.parameters['tau'] = 1.0
 problem.substitutions['bf_term'] = " win_bf * (a*sin(-m*z - omega*t) - w)"
 problem.substitutions['sp_term'] = "-win_sp * w / tau"
 
-problem.add_equation("dt(wt) + a*dz(wz)= bf_term + sp_term")
-problem.add_equation("wt - dt(w) = 0")
-problem.add_equation("wz + a*dz(w) = 0")
+problem.add_equation("dz(w) - k*u = 0")
+problem.add_equation("dt(b) - KA*(dz(dz(b)) - (k**2)*b) " \
+                     " = -((N0*BP)**2)*w - (w*dz(b) + k*u*b) " \
+                     " + bf_term + sp_term ")
+problem.add_equation("dt(u) - NU*(dz(dz(u)) - (k**2)*u) + k*p " \
+                     " = - (w*dz(u) + k*u*u) " \
+                     " + bf_term + sp_term ")
+problem.add_equation("dt(w) - NU*(dz(dz(w)) - (k**2)*w) + dz(p) - b " \
+                     " = - (w*dz(w) + k*u*w) " \
+                     " + bf_term + sp_term ")
 
 # Build solver
 solver = problem.build_solver(de.timesteppers.SBDF2)
