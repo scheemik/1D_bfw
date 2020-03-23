@@ -3,8 +3,10 @@
 
 dz(w) + iku = 0
 dt(b) - ka(dzz-k^2)b = -N^2*w -(wdz + iku)b
-dt(u) - nu(dzz-k^2)u + ikp' = -(wdz + iku)u
-dt(w) - nu(dzz-k^2)w + dz(p') - b = -(wdz + iku)w
+dt(u) - nu(dzz-k^2)u + ikp = -(wdz + iku)u
+dt(w) - nu(dzz-k^2)w + dz(p) - b = -(wdz + iku)w
+
+where k is the horizontal wavenumber
 
 This script should be ran serially (because it is 1D).
 
@@ -25,15 +27,26 @@ logger = logging.getLogger(__name__)
 
 # Domain parameters
 nz = 1024
-z0, zf = -2, 0
+z0, zf = -1.0, 0.0
 Lz = zf - z0
 
+# Physical parameters
+nu          = 1.0E-6        # [m^2/s] Viscosity (momentum diffusivity)
+kappa       = 1.4E-7        # [m^2/s] Thermal diffusivity
+g           = 9.81          # [m/s^2] Acceleration due to gravity
+
 # Problem parameters
-a=1.
-lambda_z = 1.0
-m = 2*np.pi / lambda_z
-T = 9.0
-omega = 2*np.pi / T
+N_0     = 1.0                   # [rad/s]       Reference stratification
+lam_x   = Lz / 8.0              # [m]           Horizontal wavelength
+lam_z   = lam_x                 # [m]           Vertical wavelength
+#
+k       = 2*np.pi / lam_x       # [m^-1]        Horizontal wavenumber
+m       = 2*np.pi / lam_z       # [m^-1]        Vertical wavenumber
+k_total = np.sqrt(k**2 + m**2)  # [m^-1]        Total wavenumber
+theta   = np.arctan(m/k)        # [rad]         Propagation angle from vertical
+#
+omega   = N_0 * np.cos(theta)   # [rad s^-1]    Wave frequency
+T       = 2*np.pi / omega       # [s]           Wave period
 
 # Run parameters
 sim_time_stop = 3*T
@@ -41,6 +54,9 @@ dt = 0.125 #2e-2
 adapt_dt = False
 snap_dt = 3*dt
 snap_max_writes = 100
+# temporal ramp
+temporal_ramp = True
+nT = 3.0
 # Output
 fh_mode = 'overwrite' # or 'append'
 
@@ -48,15 +64,52 @@ fh_mode = 'overwrite' # or 'append'
 
 # Bases and domain
 z_basis = de.Fourier('z', nz, interval=(z0, zf), dealias=3/2)
-# something weird happens when I use dealias, the number of grid points in x don't line up anymore. I put in 1024 but get back 1536
 domain = de.Domain([z_basis], np.float64)
 
-#Z grid
+# Z grid
 z_da = domain.grid(0, scales=domain.dealias)
 z = domain.grid(0)
 
 # Define problem
 problem = de.IVP(domain, variables=['b', 'p', 'u', 'w'])
+problem.parameters['NU'] = nu
+problem.parameters['KA'] = kappa
+problem.parameters['N0'] = N_0
+
+###############################################################################
+# Forcing from the boundary
+
+# Boundary forcing parameters
+A         = 2.0e-4
+# buffer    = 0.05
+problem.parameters['T']         = T   # [s] period of oscillation
+problem.parameters['nT']        = nT  # number of periods for the ramp
+# problem.parameters['slope']     = 25
+# problem.parameters['left_edge'] = buffer + 0.0
+# problem.parameters['right_edge']= buffer + lam_x
+problem.parameters['k']        = k
+problem.parameters['m']        = m
+problem.parameters['omega']     = omega
+# Polarization relation from boundary forcing file
+PolRel = {'u': A*(g*omega*m)/(N_0**2*k),
+          'w': A*(g*omega)/(N_0**2),
+          'b': A*g}
+# Creating forcing amplitudes
+for fld in ['u', 'w', 'b']:#, 'p']:
+    BF = domain.new_field()
+    BF['g'] = PolRel[fld]
+    problem.parameters['BF' + fld] = BF  # pass function in as a parameter.
+    del BF
+
+# Temporal ramp for boundary forcing
+if temporal_ramp:
+    problem.substitutions['ramp']   = "(1/2)*(tanh(4*t/(nT*T) - 2) + 1)"
+else:
+    problem.substitutions['ramp']   = "1"
+# Substitutions for boundary forcing (see C-R & B eq 13.7)
+problem.substitutions['fu']     = "-BFu*sin(k*x + m*z - omega*t)*ramp"
+problem.substitutions['fw']     = " BFw*sin(k*x + m*z - omega*t)*ramp"
+problem.substitutions['fb']     = "-BFb*cos(k*x + m*z - omega*t)*ramp"
 
 ###############################################################################
 # Boundary forcing window
@@ -66,9 +119,9 @@ a_bf = 1.0
 # Centered around
 z_cbf = -Lz/16
 # Full width at half max
-b_bf = Lz/32
+b_bf = lam_z
 # The equation for the window in z
-win_bf['g'] = 1#a_bf*np.exp(-4*np.log(2)*((z - z_cbf)/b_bf)**2)
+win_bf['g'] = a_bf*np.exp(-4*np.log(2)*((z - z_cbf)/b_bf)**2)
 problem.parameters['win_bf'] = win_bf
 
 # Sponge window
@@ -78,7 +131,7 @@ a_sp = 1.0
 # Centered around
 z_csp = -15*Lz/16
 # Full width at half max
-b_sp = Lz/32
+b_sp = lam_z
 win_sp['g'] = a_sp*np.exp(-4*np.log(2)*((z - z_csp)/b_sp)**2)
 problem.parameters['win_sp'] = win_sp
 
@@ -150,14 +203,13 @@ solver.stop_iteration = np.inf
 ###############################################################################
 
 # Initial conditions
-w  = solver.state['w']
-wt = solver.state['wt']
-wz = solver.state['wz']
+b = solver.state['b']
+u = solver.state['u']
+w = solver.state['w']
 
-w['g'] = 0.0*z
-w.differentiate('z', out=wz)
-wt['g'] = 0.0
-#w.differentiate('t', out=wt)
+b['g'] = 0.0
+u['g'] = 0.0
+w['g'] = 0.0
 
 ###############################################################################
 # Analysis
@@ -168,10 +220,18 @@ def add_new_file_handler(snapshot_directory='snapshots/new', sdt=snap_dt):
 snapshots = add_new_file_handler('snapshots')
 snapshots.add_system(solver.state)
 
-# Add file handler for Complex Demodulation (CD)
-# CD = add_new_file_handler('snapshots/CD')
-# CD.add_task("w_g", layout='g', name='w_g')
-# CD.add_task("w_c", layout='c', name='w_c')
+###############################################################################
+
+# CFL
+CFL = flow_tools.CFL(solver, initial_dt=dt, cadence=10, safety=1,
+                     max_change=1.5, min_change=0.5, max_dt=0.125, threshold=0.05)
+CFL.add_velocities(('u', 'w'))
+
+###############################################################################
+
+# Flow properties
+flow = flow_tools.GlobalFlowProperty(solver, cadence=10)
+flow.add_property("(k*u + m*w)/omega", name='Lin_Criterion')
 
 ###############################################################################
 
