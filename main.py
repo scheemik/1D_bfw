@@ -1,10 +1,12 @@
 """
 1D Bousinessq equations:
 
-d_{tt}w + a*d_{zz}w = F(z, t)
+dz(w) + iku = 0
+dt(b) - ka(dzz-k^2)b = -N^2*w -(wdz + iku)b
+dt(u) - nu(dzz-k^2)u + ikp' = -(wdz + iku)u
+dt(w) - nu(dzz-k^2)w + dz(p') - b = -(wdz + iku)w
 
-This script should be ran serially (because it is 1D), and creates a space-time
-plot of the computed solution.
+This script should be ran serially (because it is 1D).
 
 """
 
