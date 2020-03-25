@@ -31,9 +31,9 @@ z0, zf = -1.0, 0.0
 Lz = zf - z0
 
 # Physical parameters
-nu          = 1.0E-6        # [m^2/s] Viscosity (momentum diffusivity)
-kappa       = 1.4E-7        # [m^2/s] Thermal diffusivity
-g           = 9.81          # [m/s^2] Acceleration due to gravity
+nu          = 1.0E-6            # [m^2/s] Viscosity (momentum diffusivity)
+kappa       = 1.4E-7            # [m^2/s] Thermal diffusivity
+g           = 9.81              # [m/s^2] Acceleration due to gravity
 
 # Problem parameters
 N_0     = 1.0                   # [rad/s]       Reference stratification
@@ -82,18 +82,18 @@ problem.parameters['N0'] = N_0
 # Boundary forcing parameters
 A         = 2.0e-4
 # buffer    = 0.05
-problem.parameters['T']         = T   # [s] period of oscillation
-problem.parameters['nT']        = nT  # number of periods for the ramp
+problem.parameters['T']     = T   # [s] period of oscillation
+problem.parameters['nT']    = nT  # number of periods for the ramp
 # problem.parameters['slope']     = 25
 # problem.parameters['left_edge'] = buffer + 0.0
 # problem.parameters['right_edge']= buffer + lam_x
-problem.parameters['k']        = k
-problem.parameters['m']        = m
-problem.parameters['omega']     = omega
+problem.parameters['k']     = k
+problem.parameters['m']     = m
+problem.parameters['omega'] = omega
 # Polarization relation from boundary forcing file
-PolRel = {'u': A*(g*omega*m)/(N_0**2*k),
-          'w': A*(g*omega)/(N_0**2),
-          'b': A*g}
+PolRel = {'u': -A*(g*omega*m)/(N_0**2*k),
+          'w':  A*(g*omega)/(N_0**2),
+          'b':  A*g}
 # Creating forcing amplitudes
 for fld in ['u', 'w', 'b']:#, 'p']:
     BF = domain.new_field()
@@ -107,9 +107,9 @@ if temporal_ramp:
 else:
     problem.substitutions['ramp']   = "1"
 # Substitutions for boundary forcing (see C-R & B eq 13.7)
-problem.substitutions['fu']     = "-BFu*sin(k*x + m*z - omega*t)*ramp"
-problem.substitutions['fw']     = " BFw*sin(k*x + m*z - omega*t)*ramp"
-problem.substitutions['fb']     = "-BFb*cos(k*x + m*z - omega*t)*ramp"
+problem.substitutions['fu'] = "BFu*sin(m*z - omega*t)*ramp"
+problem.substitutions['fw'] = "BFw*sin(m*z - omega*t)*ramp"
+problem.substitutions['fb'] = "BFb*cos(m*z - omega*t)*ramp"
 
 ###############################################################################
 # Boundary forcing window
@@ -189,6 +189,7 @@ logger.info('Solver built')
 solver.stop_sim_time  = sim_time_stop
 solver.stop_wall_time = 180 * 60.0 # length in minutes * 60 = length in seconds
 solver.stop_iteration = np.inf
+
 
 # #pass the relevant arguments to the forcing function
 # F.args = [z_da, m, omega, solver]
