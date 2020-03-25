@@ -50,7 +50,7 @@ mpiexec_command="mpiexec"
 # The version of python to use
 python_command="python3"
 # Name of the main code file
-code_file='Forced_1D_wave_eq.py'
+code_file='main.py'
 # Path to snapshot files
 snapshot_path="snapshots"
 # Name of merging file

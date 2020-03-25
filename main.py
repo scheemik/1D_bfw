@@ -17,6 +17,7 @@ import matplotlib.pyplot as plt
 import time
 
 from dedalus import public as de
+from dedalus.extras import flow_tools
 from dedalus.extras.plot_tools import quad_mesh, pad_limits
 from dedalus.core.operators import GeneralFunction
 
@@ -49,7 +50,7 @@ omega   = N_0 * np.cos(theta)   # [rad s^-1]    Wave frequency
 T       = 2*np.pi / omega       # [s]           Wave period
 
 # Run parameters
-sim_time_stop = 3*T
+sim_time_stop = 20*T
 dt = 0.125 #2e-2
 adapt_dt = False
 snap_dt = 3*dt
@@ -76,6 +77,8 @@ problem.parameters['NU'] = nu
 problem.parameters['KA'] = kappa
 problem.parameters['N0'] = N_0
 
+problem.parameters['BP'] = 1.0
+
 ###############################################################################
 # Forcing from the boundary
 
@@ -84,16 +87,19 @@ A         = 2.0e-4
 # buffer    = 0.05
 problem.parameters['T']     = T   # [s] period of oscillation
 problem.parameters['nT']    = nT  # number of periods for the ramp
+problem.parameters['tau'] = 1.0
 # problem.parameters['slope']     = 25
 # problem.parameters['left_edge'] = buffer + 0.0
 # problem.parameters['right_edge']= buffer + lam_x
 problem.parameters['k']     = k
 problem.parameters['m']     = m
 problem.parameters['omega'] = omega
+
 # Polarization relation from boundary forcing file
 PolRel = {'u': -A*(g*omega*m)/(N_0**2*k),
           'w':  A*(g*omega)/(N_0**2),
           'b':  A*g}
+        # 'p': -A*(g*m)/(k**2+m**2)}
 # Creating forcing amplitudes
 for fld in ['u', 'w', 'b']:#, 'p']:
     BF = domain.new_field()
@@ -110,6 +116,7 @@ else:
 problem.substitutions['fu'] = "BFu*sin(m*z - omega*t)*ramp"
 problem.substitutions['fw'] = "BFw*sin(m*z - omega*t)*ramp"
 problem.substitutions['fb'] = "BFb*cos(m*z - omega*t)*ramp"
+# problem.substitutions['fp'] = "BFp*sin(m*z - omega*t)*ramp"
 
 ###############################################################################
 # Boundary forcing window
@@ -117,23 +124,35 @@ win_bf = domain.new_field(name = 'win_bf')
 # amplitude
 a_bf = 1.0
 # Centered around
-z_cbf = -Lz/16
+z_cbf = -lam_z
 # Full width at half max
 b_bf = lam_z
 # The equation for the window in z
 win_bf['g'] = a_bf*np.exp(-4*np.log(2)*((z - z_cbf)/b_bf)**2)
 problem.parameters['win_bf'] = win_bf
 
+# Creating forcing terms
+for fld in ['u', 'w', 'b']:#, 'p']:
+    # terms will be = win_bf * (f(psi) - psi)
+    problem.substitutions['F_term_' + fld] = "win_bf * (f"+fld+" - "+fld+")"
+# problem.substitutions['bf_term'] = " win_bf * (a*sin(-m*z - omega*t) - w)"
+
 # Sponge window
 win_sp = domain.new_field(name = 'win_sp')
 # amplitude
 a_sp = 1.0
 # Centered around
-z_csp = -15*Lz/16
+z_csp = Lz - lam_z
 # Full width at half max
 b_sp = lam_z
 win_sp['g'] = a_sp*np.exp(-4*np.log(2)*((z - z_csp)/b_sp)**2)
 problem.parameters['win_sp'] = win_sp
+
+# Creating sponge terms
+for fld in ['u', 'w', 'b']:#, 'p']:
+    # terms will be = win_bf * (f(psi) - psi)
+    problem.substitutions['S_term_' + fld] = "-win_sp * "+fld+" / tau "
+# problem.substitutions['sp_term'] = "-win_sp * w / tau"
 
 # bf_array = [0]
 # #define forcing function
@@ -161,27 +180,18 @@ problem.parameters['win_sp'] = win_sp
 # S = GeneralFunction(domain,'g',win_sp,args=[])
 
 ###############################################################################
-# Define parameters and equations
-
-problem.parameters['a'] = a
-problem.parameters['m'] = m
-problem.parameters['omega'] = omega
-# problem.parameters['F'] = F
-# problem.parameters['S'] = S
-problem.parameters['tau'] = 1.0
-problem.substitutions['bf_term'] = " win_bf * (a*sin(-m*z - omega*t) - w)"
-problem.substitutions['sp_term'] = "-win_sp * w / tau"
+# Define equations
 
 problem.add_equation("dz(w) - k*u = 0")
 problem.add_equation("dt(b) - KA*(dz(dz(b)) - (k**2)*b) " \
                      " = -((N0*BP)**2)*w - (w*dz(b) + k*u*b) " \
-                     " + bf_term + sp_term ")
+                     " + F_term_b + S_term_b ")
 problem.add_equation("dt(u) - NU*(dz(dz(u)) - (k**2)*u) + k*p " \
                      " = - (w*dz(u) + k*u*u) " \
-                     " + bf_term + sp_term ")
+                     " + F_term_u + S_term_u ")
 problem.add_equation("dt(w) - NU*(dz(dz(w)) - (k**2)*w) + dz(p) - b " \
                      " = - (w*dz(w) + k*u*w) " \
-                     " + bf_term + sp_term ")
+                     " + F_term_w + S_term_w ")
 
 # Build solver
 solver = problem.build_solver(de.timesteppers.SBDF2)
@@ -226,7 +236,7 @@ snapshots.add_system(solver.state)
 # CFL
 CFL = flow_tools.CFL(solver, initial_dt=dt, cadence=10, safety=1,
                      max_change=1.5, min_change=0.5, max_dt=0.125, threshold=0.05)
-CFL.add_velocities(('u', 'w'))
+CFL.add_velocities(('w'))
 
 ###############################################################################
 
@@ -287,7 +297,7 @@ im.set_clim(-cmax, cmax)
 plt.colorbar()
 plt.xlabel('t')
 plt.ylabel('z')
-plt.title(r'Forced 1D Wave, $(a,m,\omega)$=(%g,%g,%g)' %(problem.parameters['a'], m, omega))
+plt.title(r'Forced 1D Wave, $(k,m,\omega)$=(%g,%g,%g)' %(problem.parameters['k'], m, omega))
 plt.savefig('f_1D_wave.png')
 
 # plot forcing at boundary vs. times
