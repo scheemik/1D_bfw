@@ -51,6 +51,8 @@ mpiexec_command="mpiexec"
 python_command="python3"
 # Name of the main code file
 code_file='main.py'
+# Name of switchboard file
+switch_file="switchboard"
 # Path to snapshot files
 snapshot_path="snapshots"
 # Name of merging file
@@ -80,10 +82,10 @@ then
     echo "Running Dedalus script for local pc"
 	if [ $CORES -eq 1 ]
 	then
-		${python_command} $code_file
+		${python_command} $code_file $switchboard
 	else
 	    # mpiexec uses -n flag for number of processes to use
-	    ${mpiexec_command} -n $CORES ${python_command} $code_file
+	    ${mpiexec_command} -n $CORES ${python_command} $code_file $switchboard
 	fi
     echo ""
 	echo 'Done running script'
