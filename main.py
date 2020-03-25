@@ -154,31 +154,6 @@ for fld in ['u', 'w', 'b']:#, 'p']:
     problem.substitutions['S_term_' + fld] = "-win_sp * "+fld+" / tau "
 # problem.substitutions['sp_term'] = "-win_sp * w / tau"
 
-# bf_array = [0]
-# #define forcing function
-# def forcing(z_da, m, omega, solver): #solver.sim_time = t
-#     win_f = z_da*0
-#     win_f[-2] = 1.0
-#     force_array = win_f*np.sin(-m*z_da - omega*solver.sim_time)
-#     bf_array.append(force_array[-2])
-#     return force_array;
-# #     return np.cos(-m*z_da - omega*solver.sim_time)
-# #     return solver.sim_time;
-# #     return np.cos(z);
-#
-# #assign GeneralFunction to parameter 'F'
-# F = GeneralFunction(domain,'g',forcing,args=[])
-#
-# # Create sponge term
-# sp_array = [0]
-# #define forcing function
-# def win_sp(z_da):
-#     win_s = z_da*0 + 1.0
-#     win_s[0] = 0.0
-#     return win_s;
-# #assign GeneralFunction to parameter 'S'
-# S = GeneralFunction(domain,'g',win_sp,args=[])
-
 ###############################################################################
 # Define equations
 
@@ -199,15 +174,6 @@ logger.info('Solver built')
 solver.stop_sim_time  = sim_time_stop
 solver.stop_wall_time = 180 * 60.0 # length in minutes * 60 = length in seconds
 solver.stop_iteration = np.inf
-
-
-# #pass the relevant arguments to the forcing function
-# F.args = [z_da, m, omega, solver]
-# F.original_args = [z_da, m, omega, solver]
-#
-# #pass the relevant arguments to the sponge function
-# S.args = [z_da]
-# S.original_args = [z_da]
 
 # Above code modified from here: https://groups.google.com/forum/#!searchin/dedalus-users/%22wave$20equation%22%7Csort:date/dedalus-users/TJEOwHEDghU/g2x00YGaAwAJ
 
@@ -277,10 +243,6 @@ finally:
 # Create space-time plot
 w_array = np.transpose(np.array(w_list))
 t_array = np.array(t_list)
-
-# print('shape of w:', w_array.shape)
-# print('shape of t:',t_array.shape)
-# print('shape of z:',z.shape)
 
 xmesh, ymesh = quad_mesh(x=t_array, y=z)
 plt.figure()
