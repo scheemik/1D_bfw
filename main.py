@@ -141,10 +141,10 @@ problem.substitutions['fb'] = "BFb*cos(m*z - omega*t)*ramp"
 win_bf = domain.new_field(name = 'win_bf')
 # amplitude
 a_bf = 1.0
-# Centered around
-z_cbf = -lam_z
 # Full width at half max
 b_bf = lam_z
+# Centered around
+z_cbf = -lam_z
 # The equation for the window in z
 win_bf['g'] = a_bf*np.exp(-4*np.log(2)*((z - z_cbf)/b_bf)**2)
 problem.parameters['win_bf'] = win_bf
@@ -159,10 +159,10 @@ for fld in ['u', 'w', 'b']:#, 'p']:
 win_sp = domain.new_field(name = 'win_sp')
 # amplitude
 a_sp = 1.0
-# Centered around
-z_csp = Lz - lam_z
 # Full width at half max
 b_sp = lam_z
+# Centered around
+z_csp = Lz - lam_z
 win_sp['g'] = a_sp*np.exp(-4*np.log(2)*((z - z_csp)/b_sp)**2)
 problem.parameters['win_sp'] = win_sp
 
