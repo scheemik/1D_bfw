@@ -40,16 +40,6 @@ a_sp    = 1.0                   # [] amplitude ("height") of the sponge window
 b_sp    = lam_z                 # [m] full width at half max of sponge window
 buff_sp = b_sp                  # [m] distance from bottom boundary to center of sponge window
 
-# Run parameters pt. 2
-
-snap_dt = 3*dt
-snap_max_writes = 100
-# temporal ramp
-temporal_ramp = True
-nT = 3.0
-# Output
-fh_mode = 'overwrite' # or 'append'
-
 ###############################################################################
 ###############################################################################
 # Domain parameters
@@ -84,6 +74,16 @@ stop_iteration = np.inf         # []
 # Initial time step size
 dt = 0.125                      # [s]
 
+
+# Run parameters pt. 2
+
+snap_dt = 3*dt
+snap_max_writes = 100
+# temporal ramp
+temporal_ramp = True
+nT = 3.0
+# Output
+fh_mode = 'overwrite' # or 'append'
 
 ###############################################################################
 # ON / OFF Switches
@@ -213,7 +213,7 @@ flow_log_message= 'Max linear criterion = {0:f}'
 ###############################################################################
 ################    Shouldn't need to edit below here    #####################
 ###############################################################################
-# 
+#
 # ###############################################################################
 # # Imports for preparing physics modules
 # from mpi4py import MPI

@@ -29,8 +29,8 @@ logger = logging.getLogger(__name__)
 import sys
 # Arguments must be passed in the correct order
 arg_array = sys.argv
-filename = str(arg_array[0])
-switchboard = str(arg_array[1])
+switchboard = str(arg_array[0])
+#switchboard = str(arg_array[1])
 
 if (len(arg_array) != 2):
     print("Wrong number of arguments passed to core code")
@@ -38,14 +38,13 @@ if (len(arg_array) != 2):
 
 ###############################################################################
 # Import SwitchBoard Parameters (sbp)
-#   This runs the switchboard file, which moves files around when the code is run for the first time
 #   This import assumes the switchboard is in the same directory as the core code
 import switchboard as sbp
 
 ###############################################################################
 
 # Domain parameters
-nz = 1024
+nz = sbp.nz #1024
 z0, zf = -1.0, 0.0
 Lz = zf - z0
 
