@@ -59,15 +59,15 @@ lam_x   = Lz / 8.0              # [m]           Horizontal wavelength
 lam_z   = lam_x                 # [m]           Vertical wavelength
 #
 k       = 2*np.pi / lam_x       # [m^-1]        Horizontal wavenumber
-m       = 2*np.pi / lam_z       # [m^-1]        Vertical wavenumber
+m       = -2*np.pi / lam_z      # [m^-1]        Vertical wavenumber
 k_total = np.sqrt(k**2 + m**2)  # [m^-1]        Total wavenumber
-theta   = np.arctan(m/k)        # [rad]         Propagation angle from vertical
+theta   = np.arctan(k/m)        # [rad]         Propagation angle from vertical
 #
 omega   = N_0 * np.cos(theta)   # [rad s^-1]    Wave frequency
 T       = 2*np.pi / omega       # [s]           Wave period
-
+print('phase speed is',omega/m,'m/s')
 # Run parameters
-sim_time_stop = 20*T
+sim_time_stop = 15*T
 dt = 0.125 #2e-2
 adapt_dt = False
 snap_dt = 3*dt
@@ -104,7 +104,7 @@ A         = 2.0e-4
 # buffer    = 0.05
 problem.parameters['T']     = T   # [s] period of oscillation
 problem.parameters['nT']    = nT  # number of periods for the ramp
-problem.parameters['tau'] = 1.0
+problem.parameters['tau'] = 1.0e-1
 # problem.parameters['slope']     = 25
 # problem.parameters['left_edge'] = buffer + 0.0
 # problem.parameters['right_edge']= buffer + lam_x
@@ -145,7 +145,8 @@ b_bf = lam_z
 # Centered around
 z_cbf = -lam_z
 # The equation for the window in z
-win_bf['g'] = a_bf*np.exp(-4*np.log(2)*((z - z_cbf)/b_bf)**2)
+win_bf_array = a_bf*np.exp(-4*np.log(2)*((z - z_cbf)/b_bf)**2)
+win_bf['g'] = win_bf_array
 problem.parameters['win_bf'] = win_bf
 
 # Creating forcing terms
@@ -161,15 +162,28 @@ a_sp = 1.0
 # Full width at half max
 b_sp = lam_z
 # Centered around
-z_csp = Lz - lam_z
-win_sp['g'] = a_sp*np.exp(-4*np.log(2)*((z - z_csp)/b_sp)**2)
+z_csp = -Lz + lam_z
+# The equation for the window in z
+win_sp_array = a_sp*np.exp(-4*np.log(2)*((z - z_csp)/b_sp)**2)
+win_sp['g'] = win_sp_array
 problem.parameters['win_sp'] = win_sp
 
 # Creating sponge terms
 for fld in ['u', 'w', 'b']:#, 'p']:
     # terms will be = win_bf * (f(psi) - psi)
-    problem.substitutions['S_term_' + fld] = "-win_sp * "+fld+" / tau "
+    problem.substitutions['S_term_' + fld] = "win_sp * "+fld+" / tau "
 # problem.substitutions['sp_term'] = "-win_sp * w / tau"
+
+# Plotting windows
+if sbp.plot_windows:
+    plt.figure()
+    plt.plot(win_bf_array, z, label='Boundary forcing')
+    plt.plot(win_sp_array, z, label='Sponge layer')
+    plt.xlabel('Amplitude')
+    plt.ylabel(r'$z$')
+    plt.title(r'Windows')
+    plt.legend()
+    plt.savefig('f_1D_windows.png')
 
 ###############################################################################
 # Define equations
@@ -177,13 +191,13 @@ for fld in ['u', 'w', 'b']:#, 'p']:
 problem.add_equation("dz(w) - k*u = 0")
 problem.add_equation("dt(b) - KA*(dz(dz(b)) - (k**2)*b) " \
                      " = -((N0*BP)**2)*w - (w*dz(b) + k*u*b) " \
-                     " + F_term_b + S_term_b ")
+                     " + F_term_b - S_term_b ")
 problem.add_equation("dt(u) - NU*(dz(dz(u)) - (k**2)*u) + k*p " \
                      " = - (w*dz(u) + k*u*u) " \
-                     " + F_term_u + S_term_u ")
+                     " + F_term_u - S_term_u ")
 problem.add_equation("dt(w) - NU*(dz(dz(w)) - (k**2)*w) + dz(p) - b " \
                      " = - (w*dz(w) + k*u*w) " \
-                     " + F_term_w + S_term_w ")
+                     " + F_term_w - S_term_w ")
 
 # Build solver
 solver = problem.build_solver(de.timesteppers.SBDF2)
