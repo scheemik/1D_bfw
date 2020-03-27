@@ -30,58 +30,31 @@ import sys
 # Arguments must be passed in the correct order
 arg_array = sys.argv
 switchboard = str(arg_array[0])
-#switchboard = str(arg_array[1])
-
-if (len(arg_array) != 2):
-    print("Wrong number of arguments passed to core code")
-    print("")
 
 ###############################################################################
 # Import SwitchBoard Parameters (sbp)
 #   This import assumes the switchboard is in the same directory as the core code
 import switchboard as sbp
-
-###############################################################################
-
-# Domain parameters
-nz = sbp.nz #1024
-z0, zf = -1.0, 0.0
-Lz = zf - z0
-
 # Physical parameters
-nu          = 1.0E-6            # [m^2/s] Viscosity (momentum diffusivity)
-kappa       = 1.4E-7            # [m^2/s] Thermal diffusivity
-g           = 9.81              # [m/s^2] Acceleration due to gravity
-
+nu          = sbp.nu            # [m^2/s] Viscosity (momentum diffusivity)
+kappa       = sbp.kappa         # [m^2/s] Thermal diffusivity
+g           = sbp.g             # [m/s^2] Acceleration due to gravity
 # Problem parameters
-N_0     = 1.0                   # [rad/s]       Reference stratification
-lam_x   = Lz / 8.0              # [m]           Horizontal wavelength
-lam_z   = lam_x                 # [m]           Vertical wavelength
-#
-k       = 2*np.pi / lam_x       # [m^-1]        Horizontal wavenumber
-m       = -2*np.pi / lam_z      # [m^-1]        Vertical wavenumber
-k_total = np.sqrt(k**2 + m**2)  # [m^-1]        Total wavenumber
-theta   = np.arctan(k/m)        # [rad]         Propagation angle from vertical
-#
-omega   = N_0 * np.cos(theta)   # [rad s^-1]    Wave frequency
-T       = 2*np.pi / omega       # [s]           Wave period
+N_0         = sbp.N_0           # [rad/s]       Reference stratification
+lam_x       = sbp.lam_x         # [m]           Horizontal wavelength
+lam_z       = sbp.lam_z         # [m]           Vertical wavelength
+k           = sbp.k             # [m^-1]        Horizontal wavenumber
+m           = sbp.m             # [m^-1]        Vertical wavenumber
+k_total     = sbp.k_total       # [m^-1]        Total wavenumber
+theta       = sbp.theta         # [rad]         Propagation angle from vertical
+omega       = sbp.omega         # [rad s^-1]    Wave frequency
+T           = sbp.T             # [s]           Wave period
 print('phase speed is',omega/m,'m/s')
-# Run parameters
-sim_time_stop = 15*T
-dt = 0.125 #2e-2
-adapt_dt = False
-snap_dt = 3*dt
-snap_max_writes = 100
-# temporal ramp
-temporal_ramp = True
-nT = 3.0
-# Output
-fh_mode = 'overwrite' # or 'append'
 
 ###############################################################################
 
 # Bases and domain
-z_basis = de.Fourier('z', nz, interval=(z0, zf), dealias=3/2)
+z_basis = de.Fourier('z', sbp.nz, interval=(sbp.z0, sbp.zf), dealias=sbp.dealias)
 domain = de.Domain([z_basis], np.float64)
 
 # Z grid
@@ -101,13 +74,6 @@ problem.parameters['BP'] = 1.0
 
 # Boundary forcing parameters
 A         = 2.0e-4
-# buffer    = 0.05
-problem.parameters['T']     = T   # [s] period of oscillation
-problem.parameters['nT']    = nT  # number of periods for the ramp
-problem.parameters['tau'] = 1.0e-1
-# problem.parameters['slope']     = 25
-# problem.parameters['left_edge'] = buffer + 0.0
-# problem.parameters['right_edge']= buffer + lam_x
 problem.parameters['k']     = k
 problem.parameters['m']     = m
 problem.parameters['omega'] = omega
@@ -125,7 +91,9 @@ for fld in ['u', 'w', 'b']:#, 'p']:
     del BF
 
 # Temporal ramp for boundary forcing
-if temporal_ramp:
+if sbp.temporal_ramp:
+    problem.parameters['T']     = T       # [s] period of oscillation
+    problem.parameters['nT']    = sbp.nT  # [] number of periods for the ramp
     problem.substitutions['ramp']   = "(1/2)*(tanh(4*t/(nT*T) - 2) + 1)"
 else:
     problem.substitutions['ramp']   = "1"
@@ -138,40 +106,36 @@ problem.substitutions['fb'] = "BFb*cos(m*z - omega*t)*ramp"
 ###############################################################################
 # Boundary forcing window
 win_bf = domain.new_field(name = 'win_bf')
-# amplitude
-a_bf = 1.0
-# Full width at half max
-b_bf = lam_z
-# Centered around
-z_cbf = -lam_z
+a_bf    = sbp.a_bf              # [] amplitude ("height") of the forcing window
+b_bf    = sbp.b_bf              # [m] full width at half max of forcing window
+c_bf    = sbp.c_bf              # [m] location of center of boundary forcing window
+problem.parameters['tau_bf'] = sbp.tau_bf
 # The equation for the window in z
-win_bf_array = a_bf*np.exp(-4*np.log(2)*((z - z_cbf)/b_bf)**2)
+win_bf_array = a_bf*np.exp(-4*np.log(2)*((z - c_bf)/b_bf)**2)
 win_bf['g'] = win_bf_array
 problem.parameters['win_bf'] = win_bf
 
 # Creating forcing terms
 for fld in ['u', 'w', 'b']:#, 'p']:
     # terms will be = win_bf * (f(psi) - psi)
-    problem.substitutions['F_term_' + fld] = "win_bf * (f"+fld+" - "+fld+")"
+    problem.substitutions['F_term_' + fld] = "win_bf * (f"+fld+" - "+fld+")/tau_bf"
 # problem.substitutions['bf_term'] = " win_bf * (a*sin(-m*z - omega*t) - w)"
 
 # Sponge window
 win_sp = domain.new_field(name = 'win_sp')
-# amplitude
-a_sp = 1.0
-# Full width at half max
-b_sp = lam_z
-# Centered around
-z_csp = -Lz + lam_z
+a_sp    = sbp.a_sp              # [] amplitude ("height") of the sponge window
+b_sp    = sbp.b_sp              # [m] full width at half max of sponge window
+c_sp    = sbp.c_sp              # [m] location of center of sponge window
+problem.parameters['tau_sp'] = sbp.tau_sp
 # The equation for the window in z
-win_sp_array = a_sp*np.exp(-4*np.log(2)*((z - z_csp)/b_sp)**2)
+win_sp_array = a_sp*np.exp(-4*np.log(2)*((z - c_sp)/b_sp)**2)
 win_sp['g'] = win_sp_array
 problem.parameters['win_sp'] = win_sp
 
 # Creating sponge terms
 for fld in ['u', 'w', 'b']:#, 'p']:
     # terms will be = win_bf * (f(psi) - psi)
-    problem.substitutions['S_term_' + fld] = "win_sp * "+fld+" / tau "
+    problem.substitutions['S_term_' + fld] = "win_sp * "+fld+" / tau_sp"
 # problem.substitutions['sp_term'] = "-win_sp * w / tau"
 
 # Plotting windows
@@ -202,9 +166,9 @@ problem.add_equation("dt(w) - NU*(dz(dz(w)) - (k**2)*w) + dz(p) - b " \
 # Build solver
 solver = problem.build_solver(de.timesteppers.SBDF2)
 logger.info('Solver built')
-solver.stop_sim_time  = sim_time_stop
-solver.stop_wall_time = 180 * 60.0 # length in minutes * 60 = length in seconds
-solver.stop_iteration = np.inf
+solver.stop_sim_time  = sbp.sim_time_stop
+solver.stop_wall_time = sbp.stop_wall_time
+solver.stop_iteration = sbp.stop_iteration
 
 # Above code modified from here: https://groups.google.com/forum/#!searchin/dedalus-users/%22wave$20equation%22%7Csort:date/dedalus-users/TJEOwHEDghU/g2x00YGaAwAJ
 
@@ -221,8 +185,8 @@ w['g'] = 0.0
 
 ###############################################################################
 # Analysis
-def add_new_file_handler(snapshot_directory='snapshots/new', sdt=snap_dt):
-    return solver.evaluator.add_file_handler(snapshot_directory, sim_dt=sdt, max_writes=snap_max_writes, mode=fh_mode)
+def add_new_file_handler(snapshot_directory='snapshots/new', sdt=sbp.snap_dt):
+    return solver.evaluator.add_file_handler(snapshot_directory, sim_dt=sdt, max_writes=sbp.snap_max_writes, mode=sbp.fh_mode)
 
 # Add file handler for snapshots and output state of variables
 snapshots = add_new_file_handler('snapshots')
@@ -231,7 +195,7 @@ snapshots.add_system(solver.state)
 ###############################################################################
 
 # CFL
-CFL = flow_tools.CFL(solver, initial_dt=dt, cadence=10, safety=1,
+CFL = flow_tools.CFL(solver, initial_dt=sbp.dt, cadence=10, safety=1,
                      max_change=1.5, min_change=0.5, max_dt=0.125, threshold=0.05)
 CFL.add_velocities(('w'))
 
@@ -252,6 +216,7 @@ t_list = [solver.sim_time]
 try:
     logger.info('Starting loop')
     start_time = time.time()
+    dt = sbp.dt
     while solver.proceed:
         solver.step(dt)
         if solver.iteration % 1 == 0:

@@ -9,13 +9,13 @@ import numpy as np
 ###############################################################################
 # Main parameters, the ones I'll change a lot. Many more below
 
+# Run parameters
+stop_n_periods = 20             # [] oscillation periods
+
 # Domain parameters
 nz     = 1024                   # [] number of grid points in the z direction
 zf_dis = 0.0                    # [m] the top of the displayed z domain
 Lz_dis = 1.0                    # [m] the length of the z domain between forcing and sponge
-
-# Run parameters
-stop_n_periods = 20             # [] oscillation periods
 
 # Problem parameters
 N_0     = 1.0                   # [rad/s]       Reference stratification
@@ -33,12 +33,14 @@ T       = 2*np.pi / omega       # [s]           Wave period
 # Boundary forcing window
 a_bf    = 1.0                   # [] amplitude ("height") of the forcing window
 b_bf    = lam_z                 # [m] full width at half max of forcing window
-buff_bf = b_bf                  # [m] distance from top boundary to center of forcing window
+buff_bf = 1.5*b_bf              # [m] distance from top boundary to center of forcing window
+tau_bf  = 1.0e0
 
 # Sponge layer window
 a_sp    = 1.0                   # [] amplitude ("height") of the sponge window
 b_sp    = lam_z                 # [m] full width at half max of sponge window
-buff_sp = b_sp                  # [m] distance from bottom boundary to center of sponge window
+buff_sp = 1.5*b_sp              # [m] distance from bottom boundary to center of sponge window
+tau_sp  = 1.0e-1
 
 ###############################################################################
 ###############################################################################
@@ -49,47 +51,40 @@ buff_sp = b_sp                  # [m] distance from bottom boundary to center of
 # Lz_dis, also above
 z0_dis = zf_dis - Lz_dis        # [m] The bottom of the displayed domain
 # Dimensions of simulated domain
-zf      = zf_dis + 2*b_bf       # [m] top of simulated domain, 2 bf widths above displayed top
-z0      = z0_dis - 2*b_sp       # [m] bottom of simulated domain, 2 sp widths below displayed top
+zf      = zf_dis + 2*buff_bf    # [m] top of simulated domain, 2 bf widths above displayed top
+z0      = z0_dis - 2*buff_sp    # [m] bottom of simulated domain, 2 sp widths below displayed top
 Lz      = zf - z0               # [m] length of simulated domain
 
 
 # Boundary forcing window
-c_bf    = 1.0                   # [m] location of center of boundary forcing window
+c_bf    = zf - buff_bf          # [m] location of center of boundary forcing window
 
 # Sponge layer window
-c_sp    = 1.0                   # [m] location of center of sponge window
+c_sp    = z0 + buff_sp          # [m] location of center of sponge window
 
 ###############################################################################
-# Simulation parameters
-
-# Dealias factor
-dealias = 3/2                   # []
-
+# Run parameters
+dealias         = 3/2           # [] dealiasing factor
+dt              = 0.125         # [s] initial time step size
+snap_dt         = 5*dt          # [s] time step size for snapshots
+snap_max_writes = 100           # [] max number of writes per snapshot file
+fh_mode         = 'overwrite'   # file handling mode, either 'overwrite' or 'append'
 # Stopping conditions for the simulation
-sim_time_stop  = T * stop_n_periods
+sim_time_stop  =T*stop_n_periods# [s] number of simulated seconds until the sim stops
 stop_wall_time = 180 * 60.0     # [s] length in minutes * 60 = length in seconds, sim stops if exceeds
 stop_iteration = np.inf         # []
 
-# Initial time step size
-dt = 0.125                      # [s]
-
-
-# Run parameters pt. 2
-
-snap_dt = 3*dt
-snap_max_writes = 100
 # temporal ramp
 temporal_ramp = True
 nT = 3.0
-# Output
-fh_mode = 'overwrite' # or 'append'
 
 ###############################################################################
 # ON / OFF Switches
 
 # Determine whether adaptive time stepping is on or off
 adapt_dt                = False
+temporal_ramp           = True
+nT                      = 3.0   # number of oscillation periods long the ramp lasts
 
 # Terms in equations of motion
 viscous_term            = True
