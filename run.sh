@@ -121,11 +121,13 @@ then
 	if [ -e $snapshot_path/snapshots_s10.h5 ]
 	then
 		echo 'Reformatting snapshot file names'
-		for i in {1..9..1}
+		#for i in {1..9..1}
+		for ((i=1;i<=9;++i))
 		do
-			if [ -e $snapshot_path/snapshots_s${i}.h5 ]
+			old_name=${snapshot_path}/snapshots_s${i}.h5
+			echo "Reformatting: ${old_name}"
+			if [ -e $old_name ]
 			then
-				old_name=${snapshot_path}/snapshots_s${i}.h5
 				new_name=${snapshot_path}/snapshots_s0${i}.h5
 				mv $old_name $new_name
 			fi
