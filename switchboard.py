@@ -66,7 +66,7 @@ c_sp    = z0 + buff_sp          # [m] location of center of sponge window
 # Run parameters
 dealias         = 3/2           # [] dealiasing factor
 dt              = 0.125         # [s] initial time step size
-snap_dt         = 16*dt          # [s] time step size for snapshots
+snap_dt         = 32*dt          # [s] time step size for snapshots
 snap_max_writes = 100           # [] max number of writes per snapshot file
 fh_mode         = 'overwrite'   # file handling mode, either 'overwrite' or 'append'
 # Stopping conditions for the simulation

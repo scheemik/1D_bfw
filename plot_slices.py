@@ -194,9 +194,8 @@ for i in range(t_len):
         plot_task(fig, ax, rows, cols, i, j, z_axis, dsets, cmap, AR)
     # Add title for overall figure
     t = dsets[0][i][0]
-    # current_T = t/T
-    title_str = '{:}, $t=${:2.2f}'
-    fig.suptitle(title_str.format(name, t), fontsize=suptitle_size)
+    title_str = '{:}, $t/T=${:2.2f}'
+    fig.suptitle(title_str.format(name, t/T), fontsize=suptitle_size)
     fig.tight_layout() # this (mostly) prevents axis labels from overlapping
     # Save figure as image in designated output directory
     save_fig_as_frame(fig, i, output_path, dpi)
