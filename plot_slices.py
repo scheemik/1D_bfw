@@ -2,10 +2,11 @@
 Plot planes from joint analysis files.
 
 Usage:
-    plot_slices.py NAME <files>... [--output=<dir>]
+    plot_slices.py NAME SWITCHBOARD <files>... [--output=<dir>]
 
 Options:
     NAME            # Name to put in plot title
+    SWITCHBOARD     # Name of switchboard file
     --output=<dir>  # Output directory [default: ./frames]
 
 """
@@ -27,7 +28,11 @@ rank = comm.Get_rank()
 from docopt import docopt
 args = docopt(__doc__)
 name = args['NAME']
+switchboard = args['SWITCHBOARD']
 h5_files = args['<files>']
+
+import switchboard as sbp
+
 import pathlib
 output_path = pathlib.Path(args['--output']).absolute()
 
@@ -48,12 +53,12 @@ rows = 1
 cols = 1
 cmap = 'RdBu_r'
 n_x_ticks = 3
-n_z_ticks = 5
+n_z_ticks = 7
 n_cb_ticks = 3
-round_to_decimal = 3
+round_to_decimal = 1
 title_size = 'medium'
 suptitle_size = 'large'
-T = 8.885765876316732
+T = sbp.T
 
 # number of oscillation periods to skip at the start
 skip_nT = 0
@@ -117,7 +122,10 @@ def latex_exp(num, pos=None):
         # integer type, don't reformat
         return num
     else:
-        float_str = "{:.1E}".format(num)
+        r_num = round(num, round_to_decimal)
+        # print('num',num)
+        # print('r_num',r_num)
+        float_str = "{:.1E}".format(r_num)
         if "E" in float_str:
             base, exponent = float_str.split("E")
             exp = int(exponent)

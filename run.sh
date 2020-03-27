@@ -58,7 +58,7 @@ snapshot_path="snapshots"
 # Name of merging file
 merge_file="merge.py"
 # Name of plotting file
-plot_file="plot_slices.py" #"post-process.py"
+plot_file="plot_slices.py"
 # Name of output directory
 output_dir="outputs"
 # Path to frames
@@ -82,10 +82,10 @@ then
     echo "Running Dedalus script for local pc"
 	if [ $CORES -eq 1 ]
 	then
-		${python_command} $code_file $switchboard
+		${python_command} $code_file $switch_file
 	else
 	    # mpiexec uses -n flag for number of processes to use
-	    ${mpiexec_command} -n $CORES ${python_command} $code_file $switchboard
+	    ${mpiexec_command} -n $CORES ${python_command} $code_file $switch_file
 	fi
     echo ""
 	echo 'Done running script'
@@ -146,7 +146,7 @@ then
 		rm -rf frames
 	fi
 	echo "Plotting 2d slices"
-	${mpiexec_command} -n $CORES ${python_command} $plot_file $NAME $snapshot_path/*.h5
+	${mpiexec_command} -n $CORES ${python_command} $plot_file $NAME $switch_file $snapshot_path/*.h5
 	echo 'Done plotting frames'
 fi
 
