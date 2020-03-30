@@ -6,6 +6,9 @@ This is the switchboard for the Dedalus experiment. This file contains parameter
 
 import numpy as np
 from dedalus import public as de
+import sys
+sys.path.append("../") # Adds higher directory to python modules path
+import helper_functions as hf
 
 ###############################################################################
 # Main parameters, the ones I'll change a lot. Many more below
@@ -62,10 +65,9 @@ z_da = domain.grid(0, scales=domain.dealias)
 z = domain.grid(0)
 
 # Background profile in N_0
-BP_array = z*0+1
-for i in range(len(BP_array)):
-    if z[i] < -0.3 and z[i] > -0.4:
-        BP_array[i] = 0
+n_steps = 1
+step_th = 0.1
+BP_array = hf.BP_n_steps(n_steps, z, z0_dis, zf_dis, step_th)
 
 # Boundary forcing window 2
 c_bf    = zf - buff_bf          # [m] location of center of boundary forcing window

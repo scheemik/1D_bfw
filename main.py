@@ -31,6 +31,9 @@ import sys
 arg_array = sys.argv
 switchboard = str(arg_array[0])
 
+sys.path.append("../") # Adds higher directory to python modules path
+import helper_functions as hf
+
 ###############################################################################
 # Import SwitchBoard Parameters (sbp)
 #   This import assumes the switchboard is in the same directory as the core code
@@ -140,10 +143,7 @@ if sbp.plot_windows:
     # Set ratios by passing dictionary as 'gridspec_kw', and share y axis
     fig, axes = plt.subplots(nrows=1, ncols=2, gridspec_kw=plot_ratios, sharey=True)
     #
-    axes[0].plot(sbp.BP_array, z, label='Background profile')
-    axes[0].set_xlabel('$N_0$')
-    axes[0].set_ylabel(r'$z$')
-    axes[0].set_title(r'Background Profile')
+    hf.plot_BP(axes[0], sbp.BP_array, z)
     #
     axes[1].plot(sbp.win_bf_array, z, label='Boundary forcing')
     axes[1].plot(sbp.win_sp_array, z, label='Sponge layer')

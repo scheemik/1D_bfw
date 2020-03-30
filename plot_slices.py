@@ -32,6 +32,7 @@ switchboard = args['SWITCHBOARD']
 h5_files = args['<files>']
 
 import switchboard as sbp
+import helper_functions as hfuncts
 
 import pathlib
 output_path = pathlib.Path(args['--output']).absolute()
@@ -88,13 +89,6 @@ def format_labels_and_ticks(ax):
     x0, xf = ax.get_xlim()
     ax.xaxis.set_ticks([x0, 0.0, xf])
     ax.xaxis.set_major_formatter(ticker.FuncFormatter(latex_exp))
-
-# Plot background profile
-def plot_BP(ax, BP, z):
-    ax.plot(BP, z, label='Background profile')
-    ax.set_xlabel('$N_0$')
-    ax.set_ylabel(r'$z$')
-    ax.set_title(r'Background Profile')
 
 # Saves figure as a frame
 def save_fig_as_frame(fig, index, output, dpi):
@@ -175,7 +169,7 @@ for i in range(t_len):
     # Set ratios by passing dictionary as 'gridspec_kw', and share y axis
     fig, ax = plt.subplots(nrows=rows, ncols=cols, gridspec_kw=plot_ratios, sharey=True)
     # Plot background profile
-    plot_BP(ax[0], BP, z_axis)
+    hfuncts.plot_BP(ax[0], BP, z_axis)
     # Plot the task
     plot_task(ax[1], i, 0, z_axis, dsets)
     # Add title for overall figure
