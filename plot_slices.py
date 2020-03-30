@@ -47,14 +47,13 @@ hori_label = r'$w$ (m/s)'
 vert_label = r'$z$ (m)'
 
 # Parameters
+BP = sbp.BP_array
 dpi = 100
 tasks = ['w'] # usually 'b', 'p', 'u', or 'w'
 rows = 1
-cols = 1
-cmap = 'RdBu_r'
+cols = 2
 n_x_ticks = 3
 n_z_ticks = 7
-n_cb_ticks = 3
 round_to_decimal = 1
 title_size = 'medium'
 suptitle_size = 'large'
@@ -66,16 +65,8 @@ skip_nT = 0
 ###############################################################################
 # Helper functions
 
-# Make a plot for one task
-def plot_task(fig, axes, rows, cols, time_i, task_j, z_ax, dsets, cmap, AR):
-    # get coordinates of desired axis, avoiding dumb indexing with if statements
-    if rows==1 or cols==1:
-        if rows==1 and cols==1:
-            ax = axes
-        else:
-            ax = axes[task_j]
-    else:
-        ax = axes[task_j//cols, task_j%cols]
+# Make a plot for one time slice
+def plot_task(ax, time_i, task_j, z_ax, dsetss):
     # plot line of w vs. z
     im = ax.plot(dsets[task_j][time_i][1], z_ax)
     # Find max of absolute value for data to make symmetric around zero
@@ -87,26 +78,23 @@ def plot_task(fig, axes, rows, cols, time_i, task_j, z_ax, dsets, cmap, AR):
     ax.set_ylim(z_ax[0], z_ax[-1])
     # format axis labels and ticks
     format_labels_and_ticks(ax)
-    # Set aspect ratio for plot
-    #ax.set_aspect(AR)
     # add title
     ax.set_title(tasks[task_j], fontsize=title_size)
 
 def format_labels_and_ticks(ax):
     # add labels
     ax.set_xlabel(hori_label)
-    ax.set_ylabel(vert_label)
-    # fix vertical and horizontal ticks
+    # fix horizontal ticks
     x0, xf = ax.get_xlim()
-    x0 = round(x0, round_to_decimal)
-    xf = round(xf, round_to_decimal)
     ax.xaxis.set_ticks([x0, 0.0, xf])
     ax.xaxis.set_major_formatter(ticker.FuncFormatter(latex_exp))
-    z0, zf = ax.get_ylim()
-    z0 = round(z0, round_to_decimal)
-    zf = round(zf, round_to_decimal)
-    ax.yaxis.set_ticks(np.linspace(z0, zf, n_z_ticks))
-    ax.yaxis.set_major_formatter(ticker.FuncFormatter(latex_exp))
+
+# Plot background profile
+def plot_BP(ax, BP, z):
+    ax.plot(BP, z, label='Background profile')
+    ax.set_xlabel('$N_0$')
+    ax.set_ylabel(r'$z$')
+    ax.set_title(r'Background Profile')
 
 # Saves figure as a frame
 def save_fig_as_frame(fig, index, output, dpi):
@@ -125,7 +113,7 @@ def latex_exp(num, pos=None):
         r_num = round(num, round_to_decimal)
         # print('num',num)
         # print('r_num',r_num)
-        float_str = "{:.1E}".format(r_num)
+        float_str = "{:.1E}".format(num)
         if "E" in float_str:
             base, exponent = float_str.split("E")
             exp = int(exponent)
@@ -176,27 +164,24 @@ for task in tasks:
 # Find length of time series
 t_len = len(dsets[0])
 
-# Calculate aspect ratio of plot based on extent
-# extent_aspect = abs((x_axis[-1]-x_axis[0])/(z_axis[-1]-z_axis[0]))
-# aspect_ratio = 1
-# AR = extent_aspect/aspect_ratio
-AR = 2
+
 
 # Iterate across time, plotting and saving a frame for each timestep
 for i in range(t_len):
-    fig, ax = plt.subplots(nrows=rows, ncols=cols)
-    # Set aspect ratio for figure
-    size_factor = 4.0
-    w, h = cols*size_factor, (rows+0.4)*size_factor
-    plt.gcf().set_size_inches(w, h)
-    # Plot each task
-    for j in range(len(tasks)):
-        plot_task(fig, ax, rows, cols, i, j, z_axis, dsets, cmap, AR)
+    # This dictionary makes each subplot have the desired ratios
+    # The length of heights will be nrows and likewise len(widths)=ncols
+    plot_ratios = {'height_ratios': [1],
+                   'width_ratios': [1,3]}
+    # Set ratios by passing dictionary as 'gridspec_kw', and share y axis
+    fig, ax = plt.subplots(nrows=rows, ncols=cols, gridspec_kw=plot_ratios, sharey=True)
+    # Plot background profile
+    plot_BP(ax[0], BP, z_axis)
+    # Plot the task
+    plot_task(ax[1], i, 0, z_axis, dsets)
     # Add title for overall figure
     t = dsets[0][i][0]
     title_str = '{:}, $t/T=${:2.2f}'
     fig.suptitle(title_str.format(name, t/T), fontsize=suptitle_size)
-    fig.tight_layout() # this (mostly) prevents axis labels from overlapping
     # Save figure as image in designated output directory
     save_fig_as_frame(fig, i, output_path, dpi)
     plt.close(fig)
