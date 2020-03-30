@@ -21,6 +21,7 @@ Lz_dis = 1.0                    # [m] the length of the z domain between forcing
 z0_dis = zf_dis - Lz_dis        # [m] The bottom of the displayed domain
 
 # Problem parameters
+A       = 2.0e-4                # []            Amplitude of boundary forcing
 N_0     = 1.0                   # [rad/s]       Reference stratification
 lam_z   = Lz_dis / 8.0          # [m]           Vertical wavelength
 lam_x   = lam_z                 # [m]           Horizontal wavelength
@@ -36,7 +37,7 @@ T       = 2*np.pi / omega       # [s]           Wave period
 # Boundary forcing window 1
 a_bf    = 1.0                   # [] amplitude ("height") of the forcing window
 b_bf    = lam_z                 # [m] full width at half max of forcing window
-buff_bf = 1.5*b_bf              # [m] distance from top boundary to center of forcing window
+buff_bf = 1.5*b_bf              # [m] distance from top boundary to center of forcing
 tau_bf  = 1.0e0                 # [s] time constant for boundary forcing
 
 # Sponge layer window 1
@@ -60,8 +61,15 @@ domain = de.Domain([z_basis], np.float64)
 z_da = domain.grid(0, scales=domain.dealias)
 z = domain.grid(0)
 
+# Background profile in N_0
+BP_array = z*0+1
+for i in range(len(BP_array)):
+    if z[i] < -0.3 and z[i] > -0.4:
+        BP_array[i] = 0
+
 # Boundary forcing window 2
 c_bf    = zf - buff_bf          # [m] location of center of boundary forcing window
+win_bf_array = a_bf*np.exp(-4*np.log(2)*((z - c_bf)/b_bf)**2)
 
 # Sponge layer window 2
 c_sp    = z0 + buff_sp          # [m] location of center of sponge window window
@@ -75,8 +83,8 @@ snap_max_writes = 100           # [] max number of writes per snapshot file
 fh_mode         = 'overwrite'   # file handling mode, either 'overwrite' or 'append'
 # Stopping conditions for the simulation
 sim_time_stop  =T*stop_n_periods# [s] number of simulated seconds until the sim stops
-stop_wall_time = 180 * 60.0     # [s] length in minutes * 60 = length in seconds, sim stops if exceeds
-stop_iteration = np.inf         # []
+stop_wall_time = 180 * 60.0     # [s] length in minutes * 60 = length in seconds, sim stops if exceeded
+stop_iteration = np.inf         # [] number of iterations before the simulation stops
 
 # temporal ramp
 temporal_ramp = True

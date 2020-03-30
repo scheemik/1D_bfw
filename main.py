@@ -52,14 +52,12 @@ T           = sbp.T             # [s]           Wave period
 print('phase speed is',omega/m,'m/s')
 
 ###############################################################################
-
-# # Bases and domain
-z_basis = sbp.z_basis#de.Fourier('z', sbp.nz, interval=(sbp.z0, sbp.zf), dealias=sbp.dealias)
-domain = sbp.domain#de.Domain([z_basis], np.float64)
-
+# Bases and domain
+z_basis     = sbp.z_basis
+domain      = sbp.domain
 # Z grid
-z_da = sbp.z_da#domain.grid(0, scales=domain.dealias)
-z = sbp.z#domain.grid(0)
+z_da        = sbp.z_da
+z           = sbp.z
 
 # Define problem
 problem = de.IVP(domain, variables=['b', 'p', 'u', 'w'])
@@ -71,7 +69,7 @@ problem.parameters['N0'] = N_0
 # Forcing from the boundary
 
 # Boundary forcing parameters
-A         = 2.0e-4
+A = sbp.A
 problem.parameters['k']     = k
 problem.parameters['m']     = m
 problem.parameters['omega'] = omega
@@ -104,24 +102,15 @@ problem.substitutions['fb'] = "BFb*cos(m*z - omega*t)*ramp"
 ###############################################################################
 # Background Profile for N_0
 BP = domain.new_field(name = 'BP')
-BP_array = z*0+1
-for i in range(len(BP_array)):
-    if z[i] < -0.3 and z[i] > -0.4:
-        BP_array[i] = 0
-BP['g'] = BP_array
+BP['g'] = sbp.BP_array
 problem.parameters['BP'] = BP
 
 ###############################################################################
 # Boundary forcing window
 win_bf = domain.new_field(name = 'win_bf')
-a_bf    = sbp.a_bf              # [] amplitude ("height") of the forcing window
-b_bf    = sbp.b_bf              # [m] full width at half max of forcing window
-c_bf    = sbp.c_bf              # [m] location of center of boundary forcing window
-problem.parameters['tau_bf'] = sbp.tau_bf
-# The equation for the window in z
-win_bf_array = a_bf*np.exp(-4*np.log(2)*((z - c_bf)/b_bf)**2)
-win_bf['g'] = win_bf_array
+win_bf['g'] = sbp.win_bf_array
 problem.parameters['win_bf'] = win_bf
+problem.parameters['tau_bf'] = sbp.tau_bf # [s] time constant for sponge layer
 
 # Creating forcing terms
 for fld in ['u', 'w', 'b']:#, 'p']:
@@ -131,19 +120,13 @@ for fld in ['u', 'w', 'b']:#, 'p']:
 
 ###############################################################################
 # Sponge window
-win_sp = domain.new_field(name = 'win_sp')
-a_sp    = sbp.a_sp              # [] amplitude ("height") of the sponge window
-b_sp    = sbp.b_sp              # [m] full width at half max of sponge window
-c_sp    = sbp.c_sp              # [m] location of center of sponge window
-problem.parameters['tau_sp'] = sbp.tau_sp
-# The equation for the window in z
-win_sp_array = a_sp*np.exp(-4*np.log(2)*((z - c_sp)/b_sp)**2)
-win_sp['g'] = win_sp_array
+win_sp      = domain.new_field(name = 'win_sp')
+win_sp['g'] = sbp.win_sp_array
 problem.parameters['win_sp'] = win_sp
+problem.parameters['tau_sp'] = sbp.tau_sp # [s] time constant for sponge layer
 
 # Creating sponge terms
 for fld in ['u', 'w', 'b']:#, 'p']:
-    # terms will be = win_bf * (f(psi) - psi)
     problem.substitutions['S_term_' + fld] = "win_sp * "+fld+" / tau_sp"
 # problem.substitutions['sp_term'] = "-win_sp * w / tau"
 
@@ -157,13 +140,13 @@ if sbp.plot_windows:
     # Set ratios by passing dictionary as 'gridspec_kw', and share y axis
     fig, axes = plt.subplots(nrows=1, ncols=2, gridspec_kw=plot_ratios, sharey=True)
     #
-    axes[0].plot(BP_array, z, label='Background profile')
+    axes[0].plot(sbp.BP_array, z, label='Background profile')
     axes[0].set_xlabel('$N_0$')
     axes[0].set_ylabel(r'$z$')
     axes[0].set_title(r'Background Profile')
     #
-    axes[1].plot(win_bf_array, z, label='Boundary forcing')
-    axes[1].plot(win_sp_array, z, label='Sponge layer')
+    axes[1].plot(sbp.win_bf_array, z, label='Boundary forcing')
+    axes[1].plot(sbp.win_sp_array, z, label='Sponge layer')
     axes[1].set_xlabel('Amplitude')
     #axes[1].set_ylabel(r'$z$')
     axes[1].set_title(r'Windows')
@@ -279,12 +262,3 @@ plt.xlabel('t')
 plt.ylabel('z')
 plt.title(r'Forced 1D Wave, $(k,m,\omega)$=(%g,%g,%g)' %(problem.parameters['k'], m, omega))
 plt.savefig('f_1D_wave.png')
-
-# plot forcing at boundary vs. times
-# plt.clf()
-# plt.figure()
-# plt.plot(t_array, bf_array)
-# plt.xlabel('t')
-# plt.ylabel('Forcing amplitude')
-# plt.title(r'Boundary forcing vs. time, $(a,m,\omega)$=(%g,%g,%g)' %(problem.parameters['a'], m, omega))
-# plt.savefig('f_1D_boundary.png')
