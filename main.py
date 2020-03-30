@@ -53,21 +53,19 @@ print('phase speed is',omega/m,'m/s')
 
 ###############################################################################
 
-# Bases and domain
-z_basis = de.Fourier('z', sbp.nz, interval=(sbp.z0, sbp.zf), dealias=sbp.dealias)
-domain = de.Domain([z_basis], np.float64)
+# # Bases and domain
+z_basis = sbp.z_basis#de.Fourier('z', sbp.nz, interval=(sbp.z0, sbp.zf), dealias=sbp.dealias)
+domain = sbp.domain#de.Domain([z_basis], np.float64)
 
 # Z grid
-z_da = domain.grid(0, scales=domain.dealias)
-z = domain.grid(0)
+z_da = sbp.z_da#domain.grid(0, scales=domain.dealias)
+z = sbp.z#domain.grid(0)
 
 # Define problem
 problem = de.IVP(domain, variables=['b', 'p', 'u', 'w'])
 problem.parameters['NU'] = nu
 problem.parameters['KA'] = kappa
 problem.parameters['N0'] = N_0
-
-# problem.parameters['BP'] = 1.0
 
 ###############################################################################
 # Forcing from the boundary

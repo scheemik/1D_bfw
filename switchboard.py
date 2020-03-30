@@ -5,6 +5,7 @@ This is the switchboard for the Dedalus experiment. This file contains parameter
 """
 
 import numpy as np
+from dedalus import public as de
 
 ###############################################################################
 # Main parameters, the ones I'll change a lot. Many more below
@@ -12,10 +13,12 @@ import numpy as np
 # Run parameters
 stop_n_periods = 20             # [] oscillation periods
 
-# Domain parameters
+# Displayed domain parameters
 nz     = 1024                   # [] number of grid points in the z direction
 zf_dis = 0.0                    # [m] the top of the displayed z domain
 Lz_dis = 1.0                    # [m] the length of the z domain between forcing and sponge
+#
+z0_dis = zf_dis - Lz_dis        # [m] The bottom of the displayed domain
 
 # Problem parameters
 N_0     = 1.0                   # [rad/s]       Reference stratification
@@ -30,41 +33,42 @@ theta   = np.arctan(m/k)        # [rad]         Propagation angle from vertical
 omega   = N_0 * np.cos(theta)   # [rad s^-1]    Wave frequency
 T       = 2*np.pi / omega       # [s]           Wave period
 
-# Boundary forcing window
+# Boundary forcing window 1
 a_bf    = 1.0                   # [] amplitude ("height") of the forcing window
 b_bf    = lam_z                 # [m] full width at half max of forcing window
 buff_bf = 1.5*b_bf              # [m] distance from top boundary to center of forcing window
-tau_bf  = 1.0e0
+tau_bf  = 1.0e0                 # [s] time constant for boundary forcing
 
-# Sponge layer window
+# Sponge layer window 1
 a_sp    = 1.0                   # [] amplitude ("height") of the sponge window
 b_sp    = lam_z                 # [m] full width at half max of sponge window
-buff_sp = 1.5*b_sp              # [m] distance from bottom boundary to center of sponge window
-tau_sp  = 1.0e-1
+buff_sp = 1.5*b_sp              # [m] distance from bottom boundary to center of sponge
+tau_sp  = 1.0e-1                # [s] time constant for sponge layer
 
 ###############################################################################
 ###############################################################################
-# Domain parameters
+# Simulated domain parameters
+zf     = zf_dis + 2*buff_bf     # [m] top of simulated domain
+z0     = z0_dis - 2*buff_sp     # [m] bottom of simulated domain
+Lz     = zf - z0                # [m] length of simulated domain
+dealias= 3/2                    # [] dealiasing factor
 
-# Dimensions of displayed domain
-# zf_dis, above
-# Lz_dis, also above
-z0_dis = zf_dis - Lz_dis        # [m] The bottom of the displayed domain
-# Dimensions of simulated domain
-zf      = zf_dis + 2*buff_bf    # [m] top of simulated domain, 2 bf widths above displayed top
-z0      = z0_dis - 2*buff_sp    # [m] bottom of simulated domain, 2 sp widths below displayed top
-Lz      = zf - z0               # [m] length of simulated domain
+# Bases and domain
+z_basis = de.Fourier('z', nz, interval=(z0, zf), dealias=dealias)
+domain = de.Domain([z_basis], np.float64)
+# Z grid
+z_da = domain.grid(0, scales=domain.dealias)
+z = domain.grid(0)
 
-
-# Boundary forcing window
+# Boundary forcing window 2
 c_bf    = zf - buff_bf          # [m] location of center of boundary forcing window
 
-# Sponge layer window
-c_sp    = z0 + buff_sp          # [m] location of center of sponge window
+# Sponge layer window 2
+c_sp    = z0 + buff_sp          # [m] location of center of sponge window window
+win_sp_array = a_sp*np.exp(-4*np.log(2)*((z - c_sp)/b_sp)**2)
 
 ###############################################################################
 # Run parameters
-dealias         = 3/2           # [] dealiasing factor
 dt              = 0.125         # [s] initial time step size
 snap_dt         = 32*dt          # [s] time step size for snapshots
 snap_max_writes = 100           # [] max number of writes per snapshot file
