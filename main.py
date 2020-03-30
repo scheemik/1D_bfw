@@ -67,7 +67,7 @@ problem.parameters['NU'] = nu
 problem.parameters['KA'] = kappa
 problem.parameters['N0'] = N_0
 
-problem.parameters['BP'] = 1.0
+# problem.parameters['BP'] = 1.0
 
 ###############################################################################
 # Forcing from the boundary
@@ -104,6 +104,16 @@ problem.substitutions['fb'] = "BFb*cos(m*z - omega*t)*ramp"
 # problem.substitutions['fp'] = "BFp*sin(m*z - omega*t)*ramp"
 
 ###############################################################################
+# Background Profile for N_0
+BP = domain.new_field(name = 'BP')
+BP_array = z*0+1
+for i in range(len(BP_array)):
+    if z[i] < -0.3 and z[i] > -0.4:
+        BP_array[i] = 0
+BP['g'] = BP_array
+problem.parameters['BP'] = BP
+
+###############################################################################
 # Boundary forcing window
 win_bf = domain.new_field(name = 'win_bf')
 a_bf    = sbp.a_bf              # [] amplitude ("height") of the forcing window
@@ -119,8 +129,9 @@ problem.parameters['win_bf'] = win_bf
 for fld in ['u', 'w', 'b']:#, 'p']:
     # terms will be = win_bf * (f(psi) - psi)
     problem.substitutions['F_term_' + fld] = "win_bf * (f"+fld+" - "+fld+")/tau_bf"
-# problem.substitutions['bf_term'] = " win_bf * (a*sin(-m*z - omega*t) - w)"
+# problem.substitutions['bf_term'] = " win_bf * (a*sin(-m*z - omega*t) - w)*ramp"
 
+###############################################################################
 # Sponge window
 win_sp = domain.new_field(name = 'win_sp')
 a_sp    = sbp.a_sp              # [] amplitude ("height") of the sponge window
@@ -138,15 +149,28 @@ for fld in ['u', 'w', 'b']:#, 'p']:
     problem.substitutions['S_term_' + fld] = "win_sp * "+fld+" / tau_sp"
 # problem.substitutions['sp_term'] = "-win_sp * w / tau"
 
+###############################################################################
 # Plotting windows
 if sbp.plot_windows:
-    plt.figure()
-    plt.plot(win_bf_array, z, label='Boundary forcing')
-    plt.plot(win_sp_array, z, label='Sponge layer')
-    plt.xlabel('Amplitude')
-    plt.ylabel(r'$z$')
-    plt.title(r'Windows')
-    plt.legend()
+    # This dictionary makes each subplot have the desired ratios
+    # The length of heights will be nrows and likewise len(widths)=ncols
+    plot_ratios = {'height_ratios': [1],
+                   'width_ratios': [1,3]}
+    # Set ratios by passing dictionary as 'gridspec_kw', and share y axis
+    fig, axes = plt.subplots(nrows=1, ncols=2, gridspec_kw=plot_ratios, sharey=True)
+    #
+    axes[0].plot(BP_array, z, label='Background profile')
+    axes[0].set_xlabel('$N_0$')
+    axes[0].set_ylabel(r'$z$')
+    axes[0].set_title(r'Background Profile')
+    #
+    axes[1].plot(win_bf_array, z, label='Boundary forcing')
+    axes[1].plot(win_sp_array, z, label='Sponge layer')
+    axes[1].set_xlabel('Amplitude')
+    #axes[1].set_ylabel(r'$z$')
+    axes[1].set_title(r'Windows')
+    axes[1].legend()
+    #
     plt.savefig('f_1D_windows.png')
 
 ###############################################################################
