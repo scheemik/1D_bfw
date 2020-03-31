@@ -33,17 +33,24 @@ def BP_n_steps(n, z, z0_dis, zf_dis, th):
                 BP_array[j] = 0
     return BP_array
 
+def add_dis_bounds(ax, z0_dis=None, zf_dis=None):
+    line_color = my_clrs['k']
+    if z0_dis != None:
+        ax.axhline(y=z0_dis, color=line_color, linestyle='--')
+        ax.axhline(y=zf_dis, color=line_color, linestyle='--')
+
 # Plot background profile
-def plot_BP(ax, BP, z, omega=None):
+def plot_BP(ax, BP, z, omega=None, z0_dis=None, zf_dis=None):
     ax.plot(BP, z, color=my_clrs['N_0'], label=r'$N_0$')
     ax.set_xlabel('$N_0$')
     ax.set_ylabel(r'$z$')
     ax.set_title(r'Background Profile')
+    ax.set_ylim([min(z),max(z)])
     if omega != None:
         ax.axvline(x=omega, color=my_clrs['tab:gray'], linestyle='--', label=r'$\omega$')
         ax.legend()
 
-def plot_v_profiles(BP_array, bf_array, sp_array, z, omega):
+def plot_v_profiles(BP_array, bf_array, sp_array, z, omega=None, z0_dis=None, zf_dis=None):
     # This dictionary makes each subplot have the desired ratios
     # The length of heights will be nrows and likewise len(widths)=ncols
     plot_ratios = {'height_ratios': [1],
@@ -52,9 +59,11 @@ def plot_v_profiles(BP_array, bf_array, sp_array, z, omega):
     fig, axes = plt.subplots(nrows=1, ncols=2, gridspec_kw=plot_ratios, sharey=True)
     #
     plot_BP(axes[0], BP_array, z, omega)
+    add_dis_bounds(axes[0], z0_dis, zf_dis)
     #
     axes[1].plot(bf_array, z, color=my_clrs['bf'], label='Boundary forcing')
     axes[1].plot(sp_array, z, color=my_clrs['sp'], label='Sponge layer')
+    add_dis_bounds(axes[1], z0_dis, zf_dis)
     axes[1].set_xlabel('Amplitude')
     #axes[1].set_ylabel(r'$z$')
     axes[1].set_title(r'Windows')

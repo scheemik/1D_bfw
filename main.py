@@ -107,7 +107,6 @@ problem.substitutions['fb'] = "BFb*cos(m*z - omega*t)*ramp"
 BP = domain.new_field(name = 'BP')
 BP_array = hf.BP_n_steps(sbp.n_steps, z, sbp.z0_dis, sbp.zf_dis, sbp.step_th)
 BP['g'] = BP_array
-#BP_array(n_steps, z, z0_dis, zf_dis, step_th)
 problem.parameters['BP'] = BP
 
 ###############################################################################
@@ -138,7 +137,7 @@ for fld in ['u', 'w', 'b']:#, 'p']:
 ###############################################################################
 # Plotting windows
 if sbp.plot_windows:
-    hf.plot_v_profiles(BP_array, sbp.win_bf_array, sbp.win_sp_array, z, omega)
+    hf.plot_v_profiles(BP_array, sbp.win_bf_array, sbp.win_sp_array, z, omega, sbp.z0_dis, sbp.zf_dis)
 
 ###############################################################################
 # Define equations
