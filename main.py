@@ -12,6 +12,11 @@ This script should be ran serially (because it is 1D).
 
 """
 
+import test_functs as tf
+
+foo = tf.that_one_function("damn")
+print(foo)
+
 import numpy as np
 import matplotlib.pyplot as plt
 import time
@@ -31,7 +36,7 @@ import sys
 arg_array = sys.argv
 switchboard = str(arg_array[0])
 
-sys.path.append("../") # Adds higher directory to python modules path
+# sys.path.append("../") # Adds higher directory to python modules path
 import helper_functions as hf
 
 ###############################################################################
@@ -105,7 +110,9 @@ problem.substitutions['fb'] = "BFb*cos(m*z - omega*t)*ramp"
 ###############################################################################
 # Background Profile for N_0
 BP = domain.new_field(name = 'BP')
-BP['g'] = sbp.BP_array
+BP_array = hf.BP_n_steps(sbp.n_steps, z, sbp.z0_dis, sbp.zf_dis, sbp.step_th)
+BP['g'] = BP_array
+#BP_array(n_steps, z, z0_dis, zf_dis, step_th)
 problem.parameters['BP'] = BP
 
 ###############################################################################
@@ -143,7 +150,7 @@ if sbp.plot_windows:
     # Set ratios by passing dictionary as 'gridspec_kw', and share y axis
     fig, axes = plt.subplots(nrows=1, ncols=2, gridspec_kw=plot_ratios, sharey=True)
     #
-    hf.plot_BP(axes[0], sbp.BP_array, z)
+    hf.plot_BP(axes[0], BP_array, z)
     #
     axes[1].plot(sbp.win_bf_array, z, label='Boundary forcing')
     axes[1].plot(sbp.win_sp_array, z, label='Sponge layer')

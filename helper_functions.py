@@ -6,8 +6,8 @@ This contains helper functions for the Dedalus code so the same version of funct
 
 import numpy as np
 import matplotlib.pyplot as plt
-import sys
-import switchboard as sbp
+# import sys
+# import switchboard as sbp
 
 # Background profile in N_0
 def BP_n_steps(n, z, z0_dis, zf_dis, th):
