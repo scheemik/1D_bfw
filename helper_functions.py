@@ -6,7 +6,36 @@ This contains helper functions for the Dedalus code so the same version of funct
 
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib import ticker
 from dedalus.extras.plot_tools import quad_mesh, pad_limits
+
+# Takes an exponential number and returns a string formatted nicely for latex
+#   Expects numbers in the format 7.0E+2
+def latex_exp(num, pos=None):
+    if (isinstance(num, int)):
+        # integer type, don't reformat
+        return num
+    else:
+        float_str = "{:.1E}".format(num)
+        if "E" in float_str:
+            base, exponent = float_str.split("E")
+            exp = int(exponent)
+            b   = float(base)
+            str1 = '$'
+            if (exp == -1):
+                str1 = str1 + str(b/10.0)
+            elif (exp == 0):
+                str1 = str1 + str(base)
+            elif (exp == 1):
+                str1 = str1 + str(b*10.0)
+            elif (exp == 2):
+                str1 = str1 + str(b*100.0)
+            else:
+                str1 = str1 + str(base) + r'\cdot10^{' + str(exp) + '}'
+            str1 = str1 + '$'
+            return r"{0}".format(str1)
+        else:
+            return float_str
 
 # Background profile in N_0
 def BP_n_steps(n, z, z0_dis, zf_dis, th):
@@ -42,7 +71,7 @@ def add_dis_bounds(ax, z0_dis=None, zf_dis=None):
 def plot_BP(ax, BP, z, omega=None, z0_dis=None, zf_dis=None):
     ax.plot(BP, z, color=my_clrs['N_0'], label=r'$N_0$')
     ax.set_xlabel('$N_0$')
-    ax.set_ylabel(r'$z$')
+    ax.set_ylabel(r'$z$ (m)')
     ax.set_title(r'Background Profile')
     ax.set_ylim([min(z),max(z)])
     if omega != None:
@@ -70,21 +99,31 @@ def plot_v_profiles(BP_array, bf_array, sp_array, z, omega=None, z0_dis=None, zf
     #
     plt.savefig('f_1D_windows.png')
 
-def plot_z_vs_t(z, t_array, w_array, k, m, omega, c_map='RdBu_r'):
+def plot_z_vs_t(z, t_array, w_array, BP_array, k, m, omega, z0_dis=None, zf_dis=None, c_map='RdBu_r'):
+    # This dictionary makes each subplot have the desired ratios
+    # The length of heights will be nrows and likewise len(widths)=ncols
+    plot_ratios = {'height_ratios': [1],
+                   'width_ratios': [1,3]}
+    # Set ratios by passing dictionary as 'gridspec_kw', and share y axis
+    fig, axes = plt.subplots(nrows=1, ncols=2, gridspec_kw=plot_ratios, sharey=True)
+    #
+    plot_BP(axes[0], BP_array, z, omega)
+    add_dis_bounds(axes[0], z0_dis, zf_dis)
+    #
     xmesh, ymesh = quad_mesh(x=t_array, y=z)
-    plt.figure()
-    im = plt.pcolormesh(xmesh, ymesh, w_array, cmap=c_map)
-    plt.axis(pad_limits(xmesh, ymesh))
+    im = axes[1].pcolormesh(xmesh, ymesh, w_array, cmap=c_map)
+    # plt.axis(pad_limits(xmesh, ymesh))
     # Find max of absolute value for colorbar for limits symmetric around zero
     cmax = max(abs(w_array.flatten()))
     if cmax==0.0:
         cmax = 0.001 # to avoid the weird jump with the first frame
     # Set upper and lower limits on colorbar
     im.set_clim(-cmax, cmax)
-    plt.colorbar()
-    plt.xlabel('t')
-    plt.ylabel('z')
-    plt.title(r'Forced 1D Wave, $(k,m,\omega)$=(%g,%g,%g)' %(k, m, omega))
+    # Add colorbar to im
+    plt.colorbar(im, format=ticker.FuncFormatter(latex_exp))
+    axes[1].set_xlabel(r'$t$ (s)')
+    axes[1].set_title(r'$w$ (m/s)')
+    fig.suptitle(r'Forced 1D Wave, $(k,m,\omega)$=(%g,%g,%g)' %(k, m, omega))
     plt.savefig('f_1D_wave.png')
 
 ###############################################################################

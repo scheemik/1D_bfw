@@ -231,4 +231,5 @@ w_array = np.transpose(np.array(w_list))
 t_array = np.array(t_list)
 
 if sbp.plot_spacetime:
-    hf.plot_z_vs_t(z, t_array, w_array, k, m, omega)
+    # hf.plot_z_vs_t(z, t_array, w_array, k, m, omega)
+    hf.plot_z_vs_t(z, t_array, w_array, BP_array, k, m, omega, sbp.z0_dis, sbp.zf_dis)
