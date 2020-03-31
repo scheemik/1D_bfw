@@ -34,17 +34,52 @@ def BP_n_steps(n, z, z0_dis, zf_dis, th):
     return BP_array
 
 # Plot background profile
-def plot_BP(ax, BP, z):
-    ax.plot(BP, z, label='Background profile')
+def plot_BP(ax, BP, z, omega=None):
+    ax.plot(BP, z, color=my_clrs['N_0'], label=r'$N_0$')
     ax.set_xlabel('$N_0$')
     ax.set_ylabel(r'$z$')
     ax.set_title(r'Background Profile')
+    if omega != None:
+        ax.axvline(x=omega, color=my_clrs['tab:gray'], linestyle='--', label=r'$\omega$')
+        ax.legend()
 
-# fig, axes = plt.subplots(nrows=1, ncols=1)
-# #
-# z = np.linspace(0.2, -1.2, 1024)
-# z0_dis = -1
-# zf_dis = 0
-# BP_array = BP_n_steps(1, z, z0_dis, zf_dis, 0.2)
-# plot_BP(axes, BP_array, z)
-# plt.show()
+def plot_v_profiles(BP_array, bf_array, sp_array, z, omega):
+    # This dictionary makes each subplot have the desired ratios
+    # The length of heights will be nrows and likewise len(widths)=ncols
+    plot_ratios = {'height_ratios': [1],
+                   'width_ratios': [1,3]}
+    # Set ratios by passing dictionary as 'gridspec_kw', and share y axis
+    fig, axes = plt.subplots(nrows=1, ncols=2, gridspec_kw=plot_ratios, sharey=True)
+    #
+    plot_BP(axes[0], BP_array, z, omega)
+    #
+    axes[1].plot(bf_array, z, color=my_clrs['bf'], label='Boundary forcing')
+    axes[1].plot(sp_array, z, color=my_clrs['sp'], label='Sponge layer')
+    axes[1].set_xlabel('Amplitude')
+    #axes[1].set_ylabel(r'$z$')
+    axes[1].set_title(r'Windows')
+    axes[1].legend()
+    #
+    plt.savefig('f_1D_windows.png')
+
+###############################################################################
+# Plotting colors from style guide
+
+my_clrs       = {'diff'  : (0, 0.5, 0),         # g
+                 'visc': '#2ca02c',             # tab:green
+                 'N_0': (0, 0, 1),              # b
+                 'buoy': '#1f77b4',             # tab:blue
+                 'advec': '#d62728',            # tab:red
+                 'press': '#9467bd',            # tab:purple
+                 'bf': '#17becf',               # tab:cyan
+                 'sp': '#ff7f0e',               # tab:orange
+                 'tab:brown': '#8c564b',
+                 'tab:pink': '#e377c2',
+                 'tab:gray': '#7f7f7f',
+                 'tab:olive': '#bcbd22',
+                 'r': (1, 0, 0),
+                 'c': (0, 0.75, 0.75),
+                 'm': (0.75, 0, 0.75),
+                 'y': (0.75, 0.75, 0),
+                 'k': (0, 0, 0),
+                 'w': (1, 1, 1)}

@@ -12,11 +12,6 @@ This script should be ran serially (because it is 1D).
 
 """
 
-import test_functs as tf
-
-foo = tf.that_one_function("damn")
-print(foo)
-
 import numpy as np
 import matplotlib.pyplot as plt
 import time
@@ -36,7 +31,7 @@ import sys
 arg_array = sys.argv
 switchboard = str(arg_array[0])
 
-# sys.path.append("../") # Adds higher directory to python modules path
+# Add functions in helper file
 import helper_functions as hf
 
 ###############################################################################
@@ -143,23 +138,7 @@ for fld in ['u', 'w', 'b']:#, 'p']:
 ###############################################################################
 # Plotting windows
 if sbp.plot_windows:
-    # This dictionary makes each subplot have the desired ratios
-    # The length of heights will be nrows and likewise len(widths)=ncols
-    plot_ratios = {'height_ratios': [1],
-                   'width_ratios': [1,3]}
-    # Set ratios by passing dictionary as 'gridspec_kw', and share y axis
-    fig, axes = plt.subplots(nrows=1, ncols=2, gridspec_kw=plot_ratios, sharey=True)
-    #
-    hf.plot_BP(axes[0], BP_array, z)
-    #
-    axes[1].plot(sbp.win_bf_array, z, label='Boundary forcing')
-    axes[1].plot(sbp.win_sp_array, z, label='Sponge layer')
-    axes[1].set_xlabel('Amplitude')
-    #axes[1].set_ylabel(r'$z$')
-    axes[1].set_title(r'Windows')
-    axes[1].legend()
-    #
-    plt.savefig('f_1D_windows.png')
+    hf.plot_v_profiles(BP_array, sbp.win_bf_array, sbp.win_sp_array, z, omega)
 
 ###############################################################################
 # Define equations
