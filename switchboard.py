@@ -128,6 +128,7 @@ g           = 9.81          # [m/s^2] Acceleration due to gravity
 ###############################################################################
 # Plotting parameters
 
+plot_spacetime = True
 plot_windows = True
 
 # Dark mode on or off (ideally would make plots that have white text and alpha background)

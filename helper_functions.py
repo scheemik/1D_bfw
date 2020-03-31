@@ -6,8 +6,7 @@ This contains helper functions for the Dedalus code so the same version of funct
 
 import numpy as np
 import matplotlib.pyplot as plt
-# import sys
-# import switchboard as sbp
+from dedalus.extras.plot_tools import quad_mesh, pad_limits
 
 # Background profile in N_0
 def BP_n_steps(n, z, z0_dis, zf_dis, th):
@@ -70,6 +69,23 @@ def plot_v_profiles(BP_array, bf_array, sp_array, z, omega=None, z0_dis=None, zf
     axes[1].legend()
     #
     plt.savefig('f_1D_windows.png')
+
+def plot_z_vs_t(z, t_array, w_array, k, m, omega, c_map='RdBu_r'):
+    xmesh, ymesh = quad_mesh(x=t_array, y=z)
+    plt.figure()
+    im = plt.pcolormesh(xmesh, ymesh, w_array, cmap=c_map)
+    plt.axis(pad_limits(xmesh, ymesh))
+    # Find max of absolute value for colorbar for limits symmetric around zero
+    cmax = max(abs(w_array.flatten()))
+    if cmax==0.0:
+        cmax = 0.001 # to avoid the weird jump with the first frame
+    # Set upper and lower limits on colorbar
+    im.set_clim(-cmax, cmax)
+    plt.colorbar()
+    plt.xlabel('t')
+    plt.ylabel('z')
+    plt.title(r'Forced 1D Wave, $(k,m,\omega)$=(%g,%g,%g)' %(k, m, omega))
+    plt.savefig('f_1D_wave.png')
 
 ###############################################################################
 # Plotting colors from style guide
