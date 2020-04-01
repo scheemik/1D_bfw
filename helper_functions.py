@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from matplotlib import ticker
 from dedalus.extras.plot_tools import quad_mesh, pad_limits
 
+###############################################################################
 # Takes an exponential number and returns a string formatted nicely for latex
 #   Expects numbers in the format 7.0E+2
 def latex_exp(num, pos=None):
@@ -37,6 +38,8 @@ def latex_exp(num, pos=None):
         else:
             return float_str
 
+###############################################################################
+
 # Background profile in N_0
 def BP_n_steps(n, z, z0_dis, zf_dis, th):
     """
@@ -62,7 +65,7 @@ def BP_n_steps(n, z, z0_dis, zf_dis, th):
     return BP_array
 
 def add_dis_bounds(ax, z0_dis=None, zf_dis=None):
-    line_color = my_clrs['k']
+    line_color = my_clrs['black']
     if z0_dis != None:
         ax.axhline(y=z0_dis, color=line_color, linestyle='--')
         ax.axhline(y=zf_dis, color=line_color, linestyle='--')
@@ -99,6 +102,8 @@ def plot_v_profiles(BP_array, bf_array, sp_array, z, omega=None, z0_dis=None, zf
     #
     plt.savefig('f_1D_windows.png')
 
+###############################################################################
+
 def plot_z_vs_t(z, t_array, w_array, BP_array, k, m, omega, z0_dis=None, zf_dis=None, c_map='RdBu_r'):
     # This dictionary makes each subplot have the desired ratios
     # The length of heights will be nrows and likewise len(widths)=ncols
@@ -127,23 +132,45 @@ def plot_z_vs_t(z, t_array, w_array, BP_array, k, m, omega, z0_dis=None, zf_dis=
     plt.savefig('f_1D_wave.png')
 
 ###############################################################################
+
+# Make a plot for one time slice
+def plot_task(ax, time_i, task_j, z_ax, dsets):
+    # plot line of w vs. z
+    im = ax.plot(dsets[task_j][time_i][1], z_ax, color=my_clrs['v_w'])
+    # Find max of absolute value for data to make symmetric around zero
+    xmax = max(abs(max(dsets[task_j][time_i][1].flatten())), abs(min(dsets[task_j][time_i][1].flatten())))
+    if xmax==0.0:
+        xmax = 0.001 # to avoid the weird jump with the first frame
+    # format range of plot extent
+    ax.set_xlim(-xmax, xmax)
+    ax.set_ylim(z_ax[0], z_ax[-1])
+
+def format_labels_and_ticks(ax, hori_label):
+    # add labels
+    ax.set_xlabel(hori_label)
+    # fix horizontal ticks
+    x0, xf = ax.get_xlim()
+    ax.xaxis.set_ticks([x0, 0.0, xf])
+    ax.xaxis.set_major_formatter(ticker.FuncFormatter(latex_exp))
+
+###############################################################################
 # Plotting colors from style guide
 
 my_clrs       = {'diff'  : (0, 0.5, 0),         # g
                  'visc': '#2ca02c',             # tab:green
-                 'N_0': (0, 0, 1),              # b
-                 'buoy': '#1f77b4',             # tab:blue
+                 'buoy': (0, 0, 1),             # b
+                 'N_0': '#1f77b4',              # tab:blue
+                 'v_w': (1, 0, 0),              # r
+                 'v_u': '#e377c2',              # tab:pink
                  'advec': '#d62728',            # tab:red
-                 'press': '#9467bd',            # tab:purple
+                 'p': '#ff7f0e',                # tab:orange
                  'bf': '#17becf',               # tab:cyan
-                 'sp': '#ff7f0e',               # tab:orange
+                 'sp': '#bcbd22',               # tab:olive
                  'tab:brown': '#8c564b',
-                 'tab:pink': '#e377c2',
                  'tab:gray': '#7f7f7f',
-                 'tab:olive': '#bcbd22',
-                 'r': (1, 0, 0),
+                 'tab:purple': '#9467bd',
                  'c': (0, 0.75, 0.75),
                  'm': (0.75, 0, 0.75),
                  'y': (0.75, 0.75, 0),
-                 'k': (0, 0, 0),
-                 'w': (1, 1, 1)}
+                 'black': (0, 0, 0),
+                 'white': (1, 1, 1)}

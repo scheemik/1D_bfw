@@ -32,7 +32,7 @@ switchboard = args['SWITCHBOARD']
 h5_files = args['<files>']
 
 import switchboard as sbp
-import helper_functions as hfuncts
+import helper_functions as hf
 
 import pathlib
 output_path = pathlib.Path(args['--output']).absolute()
@@ -48,8 +48,7 @@ hori_label = r'$w$ (m/s)'
 vert_label = r'$z$ (m)'
 
 # Parameters
-BP = sbp.BP_array
-dpi = 100
+dpi = sbp.dpi
 tasks = ['w'] # usually 'b', 'p', 'u', or 'w'
 rows = 1
 cols = 2
@@ -59,36 +58,19 @@ round_to_decimal = 1
 title_size = 'medium'
 suptitle_size = 'large'
 T = sbp.T
+omega = sbp.omega
 
 # number of oscillation periods to skip at the start
 skip_nT = 0
 
+# Parameters for background profile
+n_steps = sbp.n_steps
+z0_dis  = sbp.z0_dis
+zf_dis  = sbp.zf_dis
+step_th = sbp.step_th
+
 ###############################################################################
 # Helper functions
-
-# Make a plot for one time slice
-def plot_task(ax, time_i, task_j, z_ax, dsetss):
-    # plot line of w vs. z
-    im = ax.plot(dsets[task_j][time_i][1], z_ax)
-    # Find max of absolute value for data to make symmetric around zero
-    xmax = max(abs(max(dsets[task_j][time_i][1].flatten())), abs(min(dsets[task_j][time_i][1].flatten())))
-    if xmax==0.0:
-        xmax = 0.001 # to avoid the weird jump with the first frame
-    # format range of plot extent
-    ax.set_xlim(-xmax, xmax)
-    ax.set_ylim(z_ax[0], z_ax[-1])
-    # format axis labels and ticks
-    format_labels_and_ticks(ax)
-    # add title
-    ax.set_title(tasks[task_j], fontsize=title_size)
-
-def format_labels_and_ticks(ax):
-    # add labels
-    ax.set_xlabel(hori_label)
-    # fix horizontal ticks
-    x0, xf = ax.get_xlim()
-    ax.xaxis.set_ticks([x0, 0.0, xf])
-    ax.xaxis.set_major_formatter(ticker.FuncFormatter(latex_exp))
 
 # Saves figure as a frame
 def save_fig_as_frame(fig, index, output, dpi):
@@ -96,37 +78,6 @@ def save_fig_as_frame(fig, index, output, dpi):
     savepath = output.joinpath(savename)
     fig.savefig(str(savepath), dpi=dpi)
     fig.clear()
-
-# Takes an exponential number and returns a string formatted nicely for latex
-#   Expects numbers in the format 7.0E+2
-def latex_exp(num, pos=None):
-    if (isinstance(num, int)):
-        # integer type, don't reformat
-        return num
-    else:
-        r_num = round(num, round_to_decimal)
-        # print('num',num)
-        # print('r_num',r_num)
-        float_str = "{:.1E}".format(num)
-        if "E" in float_str:
-            base, exponent = float_str.split("E")
-            exp = int(exponent)
-            b   = float(base)
-            str1 = '$'
-            if (exp == -1):
-                str1 = str1 + str(b/10.0)
-            elif (exp == 0):
-                str1 = str1 + str(base)
-            elif (exp == 1):
-                str1 = str1 + str(b*10.0)
-            elif (exp == 2):
-                str1 = str1 + str(b*100.0)
-            else:
-                str1 = str1 + str(base) + r'\cdot10^{' + str(exp) + '}'
-            str1 = str1 + '$'
-            return r"{0}".format(str1)
-        else:
-            return float_str
 
 ###############################################################################
 
@@ -158,7 +109,8 @@ for task in tasks:
 # Find length of time series
 t_len = len(dsets[0])
 
-
+# Build array for background profile
+BP_array = hf.BP_n_steps(n_steps, z_axis, z0_dis, zf_dis, step_th)
 
 # Iterate across time, plotting and saving a frame for each timestep
 for i in range(t_len):
@@ -169,9 +121,14 @@ for i in range(t_len):
     # Set ratios by passing dictionary as 'gridspec_kw', and share y axis
     fig, ax = plt.subplots(nrows=rows, ncols=cols, gridspec_kw=plot_ratios, sharey=True)
     # Plot background profile
-    hfuncts.plot_BP(ax[0], BP, z_axis)
+    hf.plot_BP(ax[0], BP_array, z_axis, omega, z0_dis, zf_dis)
     # Plot the task
-    plot_task(ax[1], i, 0, z_axis, dsets)
+    j = 0
+    hf.plot_task(ax[1], i, j, z_axis, dsets)
+    # format axis labels and ticks
+    hf.format_labels_and_ticks(ax[1], hori_label)
+    # Add title to task plot
+    ax[1].set_title(tasks[j], fontsize=title_size)
     # Add title for overall figure
     t = dsets[0][i][0]
     title_str = '{:}, $t/T=${:2.2f}'
