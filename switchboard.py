@@ -28,7 +28,7 @@ A       = 2.0e-4                # []            Amplitude of boundary forcing
 N_0     = 1.0                   # [rad/s]       Reference stratification
 set_case= 1                     # Picks combination of variables to set in switch below
 if set_case == 1:
-    lam_z   = Lz_dis / 8.0          # [m]           Vertical wavelength
+    lam_z   = Lz_dis / 4.0          # [m]           Vertical wavelength
     lam_x   = lam_z                 # [m]           Horizontal wavelength
     #
     m       = 2*np.pi / lam_z       # [m^-1]        Vertical wavenumber
@@ -86,7 +86,7 @@ z = domain.grid(0)
 
 # Background profile in N_0
 n_steps = 1
-step_th = lam_z
+step_th = 1/m
 # BP_array = hf.BP_n_steps(n_steps, z, z0_dis, zf_dis, step_th)
 
 # Boundary forcing window 2
