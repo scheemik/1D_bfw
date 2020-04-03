@@ -212,14 +212,17 @@ CFL_max_change  = 1.5
 CFL_min_change  = 0.5
 CFL_max_dt      = 0.125
 CFL_threshold   = 0.05
-
 ###############################################################################
 # Flow properties
 flow_cadence    = 10
-flow_property   = "(kx*u + kz*w)/omega"
+flow_property   = "(k*u + m*w)/omega"
 flow_name       = 'Lin_Criterion'
+###############################################################################
+# Logger parameters
+endtime_str     = 'Sim end period: %f'
+logger_cadence  = 100
+iteration_str   = 'Iteration: %i, t/T: %e, dt/T: %e'
 flow_log_message= 'Max linear criterion = {0:f}'
-
 ###############################################################################
 
 ###############################################################################

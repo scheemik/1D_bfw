@@ -183,45 +183,58 @@ snapshots = add_new_file_handler('snapshots')
 snapshots.add_system(solver.state)
 
 ###############################################################################
-
 # CFL
-CFL = flow_tools.CFL(solver, initial_dt=sbp.dt, cadence=10, safety=1,
-                     max_change=1.5, min_change=0.5, max_dt=0.125, threshold=0.05)
+CFL = flow_tools.CFL(solver, initial_dt=sbp.dt, cadence=sbp.CFL_cadence,
+                     safety=sbp.CFL_safety, max_change=sbp.CFL_max_change,
+                     min_change=sbp.CFL_min_change, max_dt=sbp.CFL_max_dt,
+                     threshold=sbp.CFL_threshold)
 CFL.add_velocities(('w'))
-
 ###############################################################################
-
 # Flow properties
-flow = flow_tools.GlobalFlowProperty(solver, cadence=10)
-flow.add_property("(k*u + m*w)/omega", name='Lin_Criterion')
-
+flow_name       = sbp.flow_name
+flow            = flow_tools.GlobalFlowProperty(solver, cadence=sbp.flow_cadence)
+flow.add_property(sbp.flow_property, name=flow_name)
 ###############################################################################
-
+# Logger parameters
+endtime_str     = sbp.endtime_str
+time_factor     = T
+adapt_dt        = sbp.adapt_dt
+logger_cadence  = sbp.logger_cadence
+iteration_str   = sbp.iteration_str
+flow_log_message= sbp.flow_log_message
+###############################################################################
 # Store data for final plot
 w.set_scales(1)
 w_list = [np.copy(w['g'])]
 t_list = [solver.sim_time]
-
+###############################################################################
 # Main loop
 try:
+    logger.info(endtime_str %(solver.stop_sim_time/time_factor))
     logger.info('Starting loop')
     start_time = time.time()
     dt = sbp.dt
     while solver.proceed:
+        # Adaptive time stepping controlled from switchboard
+        if (adapt_dt):
+            dt = CFL.compute_dt()
         solver.step(dt)
         if solver.iteration % 1 == 0:
             w.set_scales(1)
             w_list.append(np.copy(w['g']))
             t_list.append(solver.sim_time)
-        if solver.iteration % 100 == 0:
-            logger.info('Iteration: %i, Time: %e, dt: %e' %(solver.iteration, solver.sim_time, dt))
+        if solver.iteration % logger_cadence == 0:
+            logger.info(iteration_str %(solver.iteration, solver.sim_time/time_factor, dt/time_factor))
+            logger.info(flow_log_message.format(flow.max(flow_name)))
+            if np.isnan(flow.max(flow_name)):
+                raise NameError('Code blew up it seems')
 except:
     logger.error('Exception raised, triggering end of main loop.')
     raise
 finally:
     end_time = time.time()
     logger.info('Iterations: %i' %solver.iteration)
-    logger.info('Sim end time: %f' %solver.sim_time)
+    logger.info(endtime_str %(solver.sim_time/time_factor))
     logger.info('Run time: %.2f sec' %(end_time-start_time))
     logger.info('Run time: %f cpu-hr' %((end_time-start_time)/60/60*domain.dist.comm_cart.size))
 
@@ -231,5 +244,4 @@ w_array = np.transpose(np.array(w_list))
 t_array = np.array(t_list)
 
 if sbp.plot_spacetime:
-    # hf.plot_z_vs_t(z, t_array, w_array, k, m, omega)
-    hf.plot_z_vs_t(z, t_array, w_array, BP_array, k, m, omega, sbp.z0_dis, sbp.zf_dis)
+    hf.plot_z_vs_t(z, t_array, T, w_array, BP_array, k, m, omega, sbp.z0_dis, sbp.zf_dis)

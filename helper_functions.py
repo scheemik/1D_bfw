@@ -5,6 +5,7 @@ This contains helper functions for the Dedalus code so the same version of funct
 """
 
 import numpy as np
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib import ticker
 from dedalus.extras.plot_tools import quad_mesh, pad_limits
@@ -85,7 +86,7 @@ def plot_v_profiles(BP_array, bf_array, sp_array, z, omega=None, z0_dis=None, zf
     # This dictionary makes each subplot have the desired ratios
     # The length of heights will be nrows and likewise len(widths)=ncols
     plot_ratios = {'height_ratios': [1],
-                   'width_ratios': [1,3]}
+                   'width_ratios': [1,4]}
     # Set ratios by passing dictionary as 'gridspec_kw', and share y axis
     fig, axes = plt.subplots(nrows=1, ncols=2, gridspec_kw=plot_ratios, sharey=True)
     #
@@ -104,20 +105,21 @@ def plot_v_profiles(BP_array, bf_array, sp_array, z, omega=None, z0_dis=None, zf
 
 ###############################################################################
 
-def plot_z_vs_t(z, t_array, w_array, BP_array, k, m, omega, z0_dis=None, zf_dis=None, c_map='RdBu_r'):
+def plot_z_vs_t(z, t_array, T, w_array, BP_array, k, m, omega, z0_dis=None, zf_dis=None, c_map='RdBu_r'):
+    # Set aspect ratio of overall figure
+    w, h = mpl.figure.figaspect(0.5)
     # This dictionary makes each subplot have the desired ratios
     # The length of heights will be nrows and likewise len(widths)=ncols
     plot_ratios = {'height_ratios': [1],
-                   'width_ratios': [1,3]}
+                   'width_ratios': [1,5]}
     # Set ratios by passing dictionary as 'gridspec_kw', and share y axis
-    fig, axes = plt.subplots(nrows=1, ncols=2, gridspec_kw=plot_ratios, sharey=True)
+    fig, axes = plt.subplots(figsize=(w,h), nrows=1, ncols=2, gridspec_kw=plot_ratios, sharey=True)
     #
     plot_BP(axes[0], BP_array, z, omega)
     add_dis_bounds(axes[0], z0_dis, zf_dis)
     #
-    xmesh, ymesh = quad_mesh(x=t_array, y=z)
+    xmesh, ymesh = quad_mesh(x=t_array/T, y=z)
     im = axes[1].pcolormesh(xmesh, ymesh, w_array, cmap=c_map)
-    # plt.axis(pad_limits(xmesh, ymesh))
     # Find max of absolute value for colorbar for limits symmetric around zero
     cmax = max(abs(w_array.flatten()))
     if cmax==0.0:
@@ -125,10 +127,12 @@ def plot_z_vs_t(z, t_array, w_array, BP_array, k, m, omega, z0_dis=None, zf_dis=
     # Set upper and lower limits on colorbar
     im.set_clim(-cmax, cmax)
     # Add colorbar to im
-    plt.colorbar(im, format=ticker.FuncFormatter(latex_exp))
-    axes[1].set_xlabel(r'$t$ (s)')
+    cbar = plt.colorbar(im)#, format=ticker.FuncFormatter(latex_exp))
+    cbar.ax.ticklabel_format(style='sci', scilimits=(-2,2), useMathText=True)
+    axes[1].set_xlabel(r'$t/T$')
     axes[1].set_title(r'$w$ (m/s)')
-    fig.suptitle(r'Forced 1D Wave, $(k,m,\omega)$=(%g,%g,%g)' %(k, m, omega))
+    param_formated_str = latex_exp(k)+', '+latex_exp(m)+', '+latex_exp(omega)
+    fig.suptitle(r'Forced 1D Wave, $(k,m,\omega)$=(%s)' %(param_formated_str))
     plt.savefig('f_1D_wave.png')
 
 ###############################################################################
