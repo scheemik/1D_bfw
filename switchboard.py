@@ -26,15 +26,35 @@ z0_dis = zf_dis - Lz_dis        # [m] The bottom of the displayed domain
 # Problem parameters
 A       = 2.0e-4                # []            Amplitude of boundary forcing
 N_0     = 1.0                   # [rad/s]       Reference stratification
-lam_z   = Lz_dis / 8.0          # [m]           Vertical wavelength
-lam_x   = lam_z                 # [m]           Horizontal wavelength
-#
-k       = 2*np.pi / lam_x       # [m^-1]        Horizontal wavenumber
-m       = 2*np.pi / lam_z       # [m^-1]        Vertical wavenumber
-k_total = np.sqrt(k**2 + m**2)  # [m^-1]        Total wavenumber
-theta   = np.arctan(m/k)        # [rad]         Propagation angle from vertical
-#
-omega   = N_0 * np.cos(theta)   # [rad s^-1]    Wave frequency
+set_case= 3                     # Picks combination of variables to set in switch below
+if set_case == 1:
+    lam_z   = Lz_dis / 8.0          # [m]           Vertical wavelength
+    lam_x   = lam_z                 # [m]           Horizontal wavelength
+    #
+    m       = 2*np.pi / lam_z       # [m^-1]        Vertical wavenumber
+    k       = 2*np.pi / lam_x       # [m^-1]        Horizontal wavenumber
+    k_total = np.sqrt(k**2 + m**2)  # [m^-1]        Total wavenumber
+    theta   = np.arctan(m/k)        # [rad]         Propagation angle from vertical
+    omega   = N_0 * np.cos(theta)   # [rad s^-1]    Wave frequency
+elif set_case == 2:
+    lam_z   = Lz_dis / 8.0          # [m]           Vertical wavelength
+    omega   = 0.7071                # [rad s^-1]    Wave frequency
+    #
+    m       = 2*np.pi / lam_z       # [m^-1]        Vertical wavenumber
+    theta   = np.arccos(omega/N_0)  # [rad]         Propagation angle from vertical
+    k       = m/np.tan(theta)       # [m^-1]        Horizontal wavenumber
+    k_total = np.sqrt(k**2 + m**2)  # [m^-1]        Total wavenumber
+    lam_x   = 2*np.pi / k           # [m]           Horizontal wavelength
+elif set_case == 3:
+    lam_z   = Lz_dis / 8.0          # [m]           Vertical wavelength
+    theta   = 0.7854 # 45deg        # [rad]         Propagation angle from vertical
+    #
+    m       = 2*np.pi / lam_z       # [m^-1]        Vertical wavenumber
+    k       = m/np.tan(theta)       # [m^-1]        Horizontal wavenumber
+    k_total = np.sqrt(k**2 + m**2)  # [m^-1]        Total wavenumber
+    lam_x   = 2*np.pi / k           # [m]           Horizontal wavelength
+    omega   = N_0 * np.cos(theta)   # [rad s^-1]    Wave frequency
+
 T       = 2*np.pi / omega       # [s]           Wave period
 
 # Boundary forcing window 1
