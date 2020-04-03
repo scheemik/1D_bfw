@@ -168,7 +168,7 @@ scale       = 2.5
 dpi         = 100
 
 # Animation parameters
-fps = 15
+fps = 20
 
 ###############################################################################
 # Snapshot parameters

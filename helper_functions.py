@@ -73,7 +73,7 @@ def add_dis_bounds(ax, z0_dis=None, zf_dis=None):
 # Plot background profile
 def plot_BP(ax, BP, z, omega=None, z0_dis=None, zf_dis=None):
     ax.plot(BP, z, color=my_clrs['N_0'], label=r'$N_0$')
-    ax.set_xlabel('$N_0$')
+    ax.set_xlabel(r'$N_0$ (s$^{-1}$)')
     ax.set_ylabel(r'$z$ (m)')
     ax.set_title(r'Background Profile')
     ax.set_ylim([min(z),max(z)])

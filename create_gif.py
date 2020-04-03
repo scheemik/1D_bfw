@@ -38,9 +38,11 @@ if __name__ == '__main__':
     png_dir = arguments.get('FRAMES_PATH')
     print('Gif saving to', gif_file)
 
+import switchboard as sbp
+
 # To set the frames per second
-fps = 15
-frame_duration = 1.0 / fps
+# fps = 15
+frame_duration = 1.0 / sbp.fps
 
 images = []
 # need to sort because os.listdir returns a list of arbitrary order

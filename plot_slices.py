@@ -117,7 +117,7 @@ for i in range(t_len):
     # This dictionary makes each subplot have the desired ratios
     # The length of heights will be nrows and likewise len(widths)=ncols
     plot_ratios = {'height_ratios': [1],
-                   'width_ratios': [1,3]}
+                   'width_ratios': [1,4]}
     # Set ratios by passing dictionary as 'gridspec_kw', and share y axis
     fig, ax = plt.subplots(nrows=rows, ncols=cols, gridspec_kw=plot_ratios, sharey=True)
     # Plot background profile
@@ -129,6 +129,9 @@ for i in range(t_len):
     hf.format_labels_and_ticks(ax[1], hori_label)
     # Add title to task plot
     ax[1].set_title(tasks[j], fontsize=title_size)
+    # add display bounds
+    hf.add_dis_bounds(ax[0], z0_dis, zf_dis)
+    hf.add_dis_bounds(ax[1], z0_dis, zf_dis)
     # Add title for overall figure
     t = dsets[0][i][0]
     title_str = '{:}, $t/T=${:2.2f}'
