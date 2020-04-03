@@ -29,7 +29,9 @@ logger = logging.getLogger(__name__)
 import sys
 # Arguments must be passed in the correct order
 arg_array = sys.argv
-switchboard = str(arg_array[0])
+# argv[0] is the name of this file
+run_name = str(arg_array[1])
+switchboard = str(arg_array[2])
 
 # Add functions in helper file
 import helper_functions as hf
@@ -137,7 +139,7 @@ for fld in ['u', 'w', 'b']:#, 'p']:
 ###############################################################################
 # Plotting windows
 if sbp.plot_windows:
-    hf.plot_v_profiles(BP_array, sbp.win_bf_array, sbp.win_sp_array, z, omega, sbp.z0_dis, sbp.zf_dis)
+    hf.plot_v_profiles(BP_array, sbp.win_bf_array, sbp.win_sp_array, z, omega, sbp.z0_dis, sbp.zf_dis, title_str=run_name)
 
 ###############################################################################
 # Define equations
@@ -244,4 +246,4 @@ w_array = np.transpose(np.array(w_list))
 t_array = np.array(t_list)
 
 if sbp.plot_spacetime:
-    hf.plot_z_vs_t(z, t_array, T, w_array, BP_array, k, m, omega, sbp.z0_dis, sbp.zf_dis)
+    hf.plot_z_vs_t(z, t_array, T, w_array, BP_array, k, m, omega, sbp.z0_dis, sbp.zf_dis, title_str=run_name)

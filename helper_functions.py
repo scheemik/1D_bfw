@@ -82,7 +82,7 @@ def plot_BP(ax, BP, z, omega=None, z0_dis=None, zf_dis=None):
         ax.axvline(x=omega, color=my_clrs['tab:gray'], linestyle='--', label=r'$\omega$')
         ax.legend()
 
-def plot_v_profiles(BP_array, bf_array, sp_array, z, omega=None, z0_dis=None, zf_dis=None):
+def plot_v_profiles(BP_array, bf_array, sp_array, z, omega=None, z0_dis=None, zf_dis=None, title_str='Forced 1D Wave'):
     # This dictionary makes each subplot have the desired ratios
     # The length of heights will be nrows and likewise len(widths)=ncols
     plot_ratios = {'height_ratios': [1],
@@ -101,11 +101,12 @@ def plot_v_profiles(BP_array, bf_array, sp_array, z, omega=None, z0_dis=None, zf
     axes[1].set_title(r'Windows')
     axes[1].legend()
     #
+    fig.suptitle(r'%s' %(title_str))
     plt.savefig('f_1D_windows.png')
 
 ###############################################################################
 
-def plot_z_vs_t(z, t_array, T, w_array, BP_array, k, m, omega, z0_dis=None, zf_dis=None, c_map='RdBu_r'):
+def plot_z_vs_t(z, t_array, T, w_array, BP_array, k, m, omega, z0_dis=None, zf_dis=None, c_map='RdBu_r', title_str='Forced 1D Wave'):
     # Set aspect ratio of overall figure
     w, h = mpl.figure.figaspect(0.5)
     # This dictionary makes each subplot have the desired ratios
@@ -132,7 +133,7 @@ def plot_z_vs_t(z, t_array, T, w_array, BP_array, k, m, omega, z0_dis=None, zf_d
     axes[1].set_xlabel(r'$t/T$')
     axes[1].set_title(r'$w$ (m/s)')
     param_formated_str = latex_exp(k)+', '+latex_exp(m)+', '+latex_exp(omega)
-    fig.suptitle(r'Forced 1D Wave, $(k,m,\omega)$=(%s)' %(param_formated_str))
+    fig.suptitle(r'%s, $(k,m,\omega)$=(%s)' %(title_str, param_formated_str))
     plt.savefig('f_1D_wave.png')
 
 ###############################################################################

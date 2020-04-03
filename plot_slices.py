@@ -87,7 +87,6 @@ dsets = []
 for task in tasks:
     task_tseries = []
     for filename in h5_files:
-        #print(filename)
         with h5py.File(filename, mode='r') as f:
             dset = f['tasks'][task]
             # Check dimensionality of data

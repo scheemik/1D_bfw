@@ -82,10 +82,10 @@ then
     echo "Running Dedalus script for local pc"
 	if [ $CORES -eq 1 ]
 	then
-		${python_command} $code_file $switch_file
+		${python_command} $code_file $NAME $switch_file
 	else
 	    # mpiexec uses -n flag for number of processes to use
-	    ${mpiexec_command} -n $CORES ${python_command} $code_file $switch_file
+	    ${mpiexec_command} -n $CORES ${python_command} $code_file $NAME $switch_file
 	fi
     echo ""
 	echo 'Done running script'

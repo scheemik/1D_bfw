@@ -14,7 +14,7 @@ from dedalus import public as de
 # Main parameters, the ones I'll change a lot. Many more below
 
 # Run parameters
-stop_n_periods = 25             # [] oscillation periods
+stop_n_periods = 15             # [] oscillation periods
 
 # Displayed domain parameters
 nz     = 1024                   # [] number of grid points in the z direction
@@ -26,7 +26,7 @@ z0_dis = zf_dis - Lz_dis        # [m] The bottom of the displayed domain
 # Problem parameters
 A       = 2.0e-4                # []            Amplitude of boundary forcing
 N_0     = 1.0                   # [rad/s]       Reference stratification
-set_case= 2                     # Picks combination of variables to set in switch below
+set_case= 1                     # Picks combination of variables to set in switch below
 if set_case == 1:
     lam_z   = Lz_dis / 8.0          # [m]           Vertical wavelength
     lam_x   = lam_z                 # [m]           Horizontal wavelength
@@ -38,7 +38,7 @@ if set_case == 1:
     omega   = N_0 * np.cos(theta)   # [rad s^-1]    Wave frequency
 elif set_case == 2:
     lam_z   = Lz_dis / 8.0          # [m]           Vertical wavelength
-    omega   = 0.99                # [rad s^-1]    Wave frequency
+    omega   = 0.7071                # [rad s^-1]    Wave frequency
     #
     m       = 2*np.pi / lam_z       # [m^-1]        Vertical wavenumber
     theta   = np.arccos(omega/N_0)  # [rad]         Propagation angle from vertical
@@ -86,7 +86,7 @@ z = domain.grid(0)
 
 # Background profile in N_0
 n_steps = 1
-step_th = 0.1
+step_th = lam_z
 # BP_array = hf.BP_n_steps(n_steps, z, z0_dis, zf_dis, step_th)
 
 # Boundary forcing window 2
