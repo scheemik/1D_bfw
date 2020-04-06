@@ -36,3 +36,6 @@ axes.set_ylabel(r'$m_0L$')
 axes.set_title(r'$|\mathcal{T}|/|\mathcal{I}|$ for 1 layer')
 
 plt.savefig('Tcoeff_Ghaemsaidi_fig3a.png')
+
+print('For mL=3.5 and theta=45, T=',str(T_for_1_layer(np.pi/4, 3.5)))
+print('For mL=1.0 and theta=45, T=',str(T_for_1_layer(np.pi/4, 1.0)))
