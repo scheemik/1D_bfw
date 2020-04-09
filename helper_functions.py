@@ -79,7 +79,7 @@ def plot_BP(ax, BP, z, omega=None, z0_dis=None, zf_dis=None):
     ax.set_title(r'Background Profile')
     ax.set_ylim([min(z),max(z)])
     if omega != None:
-        ax.axvline(x=omega, color=my_clrs['tab:gray'], linestyle='--', label=r'$\omega$')
+        ax.axvline(x=omega, color=my_clrs['omega'], linestyle='--', label=r'$\omega$')
         ax.legend()
 
 def plot_v_profiles(BP_array, bf_array, sp_array, z, omega=None, z0_dis=None, zf_dis=None, title_str='Forced 1D Wave'):
@@ -93,8 +93,8 @@ def plot_v_profiles(BP_array, bf_array, sp_array, z, omega=None, z0_dis=None, zf
     plot_BP(axes[0], BP_array, z, omega)
     add_dis_bounds(axes[0], z0_dis, zf_dis)
     #
-    axes[1].plot(bf_array, z, color=my_clrs['bf'], label='Boundary forcing')
-    axes[1].plot(sp_array, z, color=my_clrs['sp'], label='Sponge layer')
+    axes[1].plot(bf_array, z, color=my_clrs['F_bf'], label='Boundary forcing')
+    axes[1].plot(sp_array, z, color=my_clrs['F_sp'], label='Sponge layer')
     add_dis_bounds(axes[1], z0_dis, zf_dis)
     axes[1].set_xlabel('Amplitude')
     #axes[1].set_ylabel(r'$z$')
@@ -141,7 +141,7 @@ def plot_z_vs_t(z, t_array, T, w_array, BP_array, k, m, omega, z0_dis=None, zf_d
 # Make a plot for one time slice
 def plot_task(ax, time_i, task_j, z_ax, dsets):
     # plot line of w vs. z
-    im = ax.plot(dsets[task_j][time_i][1], z_ax, color=my_clrs['v_w'])
+    im = ax.plot(dsets[task_j][time_i][1], z_ax, color=my_clrs['w'])
     # Find max of absolute value for data to make symmetric around zero
     xmax = max(abs(max(dsets[task_j][time_i][1].flatten())), abs(min(dsets[task_j][time_i][1].flatten())))
     if xmax==0.0:
@@ -161,24 +161,28 @@ def format_labels_and_ticks(ax, hori_label):
 ###############################################################################
 # Plotting colors from style guide
 
-my_clrs       = {'diff'  : (0, 0.5, 0),         # g
-                 'visc': '#2ca02c',             # tab:green
-                 'buoy': (0, 0, 1),             # b
-                 'N_0': '#1f77b4',              # tab:blue
-                 'v_w': (1, 0, 0),              # r
-                 'v_u': '#e377c2',              # tab:pink
-                 'advec': '#d62728',            # tab:red
-                 'p': '#ff7f0e',                # tab:orange
-                 'bf': '#17becf',               # tab:cyan
-                 'sp': '#bcbd22',               # tab:olive
-                 'tab:brown': '#8c564b',
-                 'tab:gray': '#7f7f7f',
-                 'tab:purple': '#9467bd',
-                 'c': (0, 0.75, 0.75),
-                 'm': (0.75, 0, 0.75),
-                 'y': (0.75, 0.75, 0),
-                 'black': (0, 0, 0),
-                 'white': (1, 1, 1)}
+my_clrs       =  {'b': '#6495ED',               # - cornflowerblue
+                  'w': (1, 0, 0),               # - r
+                  'u': (0, 0, 1),               # - b
+                  'v'  : (0, 0.5, 0),           # - g
+                  'p': '#ff7f0e',               # - tab:orange
+                  'diffusion': '#006400',       # - darkgreen
+                  'viscosity': '#2ca02c',       # - tab:green
+                  '$N_0': '#1f77b4',            # - tab:blue
+                  '$rho': '#6A5ACD',            # - slateblue
+                  'advection': '#d62728',       # - tab:red
+                  'omega': '#800080',           # - purple
+                  'F_bf': '#008080',            # - teal
+                  'F_sp': '#CD853F',            # - peru
+                  'temperature': '#B22222',     # - firebrick
+                  'salinity': '#4682B4',        # - steelblue
+                  'incident': '#8A2BE2',        # - blueviolet
+                  'transmission': '#4169E1',    # - royalblue
+                  'reflection': '#FF6347',      # - tomato
+                  'linear': '#228B22',          # - forestgreen
+                  'non-linear': '#000080',      # - navy
+                  'black': (0, 0, 0),
+                  'white': (1, 1, 1)}
 
  CSS4_COLORS = {'aliceblue': '#F0F8FF',
                 'antiquewhite': '#FAEBD7',
