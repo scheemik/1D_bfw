@@ -161,17 +161,18 @@ def format_labels_and_ticks(ax, hori_label):
 ###############################################################################
 # Plotting colors from style guide
 
-my_clrs       =  {'b': '#6495ED',               # - cornflowerblue
+my_clrs       =  {'b': TAB_COLORS['tab:blue'],
                   'w': (1, 0, 0),               # - r
                   'u': (0, 0, 1),               # - b
                   'v'  : (0, 0.5, 0),           # - g
-                  'p': '#ff7f0e',               # - tab:orange
-                  'diffusion': '#006400',       # - darkgreen
-                  'viscosity': '#2ca02c',       # - tab:green
-                  '$N_0': '#1f77b4',            # - tab:blue
-                  '$rho': '#6A5ACD',            # - slateblue
-                  'advection': '#d62728',       # - tab:red
-                  'omega': '#800080',           # - purple
+                  'p': CSS4_COLORS['plum'],
+                  'diffusion': CSS4_COLORS['peru'],
+                  'viscosity': CSS4_COLORS['peru'],
+                  'N_0': TAB_COLORS['tab:blue'],
+                  'rho': CSS4_COLORS['slateblue'],
+                  'advection': CSS4_COLORS['indianred'],
+                  'coriolis': CSS4_COLORS['teal'],
+                  'omega': CSS4_COLORS['slategray'],
                   'F_bf': '#008080',            # - teal
                   'F_sp': '#CD853F',            # - peru
                   'temperature': '#B22222',     # - firebrick
@@ -179,12 +180,30 @@ my_clrs       =  {'b': '#6495ED',               # - cornflowerblue
                   'incident': '#8A2BE2',        # - blueviolet
                   'transmission': '#4169E1',    # - royalblue
                   'reflection': '#FF6347',      # - tomato
-                  'linear': '#228B22',          # - forestgreen
-                  'non-linear': '#000080',      # - navy
+                  'linear': CSS4_COLORS['forestgreen'],
+                  'nonlinear': CSS4_COLORS['indianred'],
+                  'arctic': CSS4_COLORS['cornflowerblue'],
+                  'cold-fresh': CUSTOM_COLORS['lightcornflowerblue2'],
+                  'warm-salty': CUSTOM_COLORS['lightred3'],
                   'black': (0, 0, 0),
                   'white': (1, 1, 1)}
 
- CSS4_COLORS = {'aliceblue': '#F0F8FF',
+CUSTOM_COLORS ={'lightcornflowerblue2': '#a4c2f4',
+                'lightred3': '#f2c1c1'}
+
+TAB_COLORS =   {'tab:blue': '#1f77b4',
+                'tab:orange': '#ff7f0e',
+                'tab:green': '#2ca02c',
+                'tab:red': '#d62728',
+                'tab:purple': '#ffffff',
+                'tab:brown': '#ffffff',
+                'tab:pink': '#ffffff',
+                'tab:gray': '#ffffff',
+                'tab:olive': '#ffffff',
+                'tab:cyan': '#ffffff'
+                }
+
+CSS4_COLORS =  {'aliceblue': '#F0F8FF',
                 'antiquewhite': '#FAEBD7',
                 'aqua': '#00FFFF',
                 'aquamarine': '#7FFFD4',
