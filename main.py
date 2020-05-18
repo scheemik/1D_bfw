@@ -71,6 +71,8 @@ domain      = sbp.domain
 # Z grid
 z_da        = sbp.z_da
 z           = sbp.z
+# Getting wavenumbers
+ks          = sbp.ks
 
 # Define problem
 # problem = de.IVP(domain, variables=['b', 'p', 'u', 'w'])
@@ -238,7 +240,8 @@ flow_log_message= sbp.flow_log_message
 # w_list = [np.copy(w['g'])]
 # t_list = [solver.sim_time]
 psi.set_scales(1)
-psi_list = [np.copy(psi['g'])]
+psi_gs = [np.copy(psi['g'])]
+psi_cs = [np.copy(psi['c'])]
 t_list = [solver.sim_time]
 ###############################################################################
 # Main loop
@@ -257,7 +260,8 @@ try:
             # w_list.append(np.copy(w['g']))
             # t_list.append(solver.sim_time)
             psi.set_scales(1)
-            psi_list.append(np.copy(psi['g']))
+            psi_gs.append(np.copy(psi['g']))
+            psi_cs.append(np.copy(psi['c']))
             t_list.append(solver.sim_time)
         if solver.iteration % logger_cadence == 0:
             logger.info(iteration_str %(solver.iteration, solver.sim_time/time_factor, dt/time_factor))
@@ -278,10 +282,14 @@ finally:
 # Create space-time plot
 # w_array = np.transpose(np.array(w_list))
 # t_array = np.array(t_list)
-psi_array = np.transpose(np.array(psi_list))
+psi_g_array = np.transpose(np.array(psi_gs))
+psi_c_array = np.transpose(np.array(psi_cs))
 t_array = np.array(t_list)
 
 # if sbp.plot_spacetime:
 #     hf.plot_z_vs_t(z, t_array, T, w_array, BP_array, k, m, omega, sbp.z0_dis, sbp.zf_dis, title_str=run_name)
 if sbp.plot_spacetime:
-    hf.plot_z_vs_t(z, t_array, T, psi_array, BP_array, k, m, omega, sbp.z0_dis, sbp.zf_dis, title_str=run_name)
+    hf.plot_z_vs_t(z, t_array, T, psi_g_array, BP_array, k, m, omega, sbp.z0_dis, sbp.zf_dis, title_str=run_name)
+
+if sbp.plot_wavespace:
+    hf.plot_k_vs_t(ks, t_array, T, psi_g_array, k, m, omega, sbp.z0_dis, sbp.zf_dis, title_str=run_name)

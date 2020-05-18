@@ -14,7 +14,7 @@ from dedalus import public as de
 # Main parameters, the ones I'll change a lot. Many more below
 
 # Run parameters
-stop_n_periods = 5             # [] oscillation periods
+stop_n_periods = 7             # [] oscillation periods
 
 # Displayed domain parameters
 nz     = 1024                   # [] number of grid points in the z direction
@@ -26,7 +26,7 @@ z0_dis = zf_dis - Lz_dis        # [m] The bottom of the displayed domain
 # Problem parameters
 A       = 2.0e-4                # []            Amplitude of boundary forcing
 N_0     = 1.0                   # [rad/s]       Reference stratification
-f_0     = 0.0                   # [s^-1]        Reference Coriolis parameter
+f_0     = 0.001                 # [s^-1]        Reference Coriolis parameter
 set_case= 1                     # Picks combination of variables to set in switch below
 if set_case == 1:
     lam_z   = Lz_dis / 4.0          # [m]           Vertical wavelength
@@ -84,6 +84,8 @@ domain = de.Domain([z_basis], np.float64)
 # Z grid
 z_da = domain.grid(0, scales=domain.dealias)
 z = domain.grid(0)
+# Getting wavenumbers
+ks = z_basis.wavenumbers
 
 # Background profile in N_0
 n_steps = 1
@@ -150,7 +152,8 @@ g           = 9.81          # [m/s^2] Acceleration due to gravity
 # Plotting parameters
 
 plot_spacetime = True
-plot_windows = True
+plot_wavespace = True
+plot_windows   = True
 
 # Dark mode on or off (ideally would make plots that have white text and alpha background)
 dark_mode = False

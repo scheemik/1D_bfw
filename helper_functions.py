@@ -137,6 +137,35 @@ def plot_z_vs_t(z, t_array, T, w_array, BP_array, k, m, omega, z0_dis=None, zf_d
     fig.suptitle(r'%s, $(k,m,\omega)$=(%s)' %(title_str, param_formated_str))
     plt.savefig('f_1D_wave.png')
 
+def plot_k_vs_t(ks, t_array, T, data_array, k, m, omega, z0_dis=None, zf_dis=None, c_map='RdBu_r', title_str='Forced 1D Wave'):
+    # Set aspect ratio of overall figure
+    w, h = mpl.figure.figaspect(0.5)
+    # This dictionary makes each subplot have the desired ratios
+    # The length of heights will be nrows and likewise len(widths)=ncols
+    plot_ratios = {'height_ratios': [1],
+                   'width_ratios': [1]}
+    # Set ratios by passing dictionary as 'gridspec_kw', and share y axis
+    fig, axes = plt.subplots(figsize=(w,h), nrows=1, ncols=1, gridspec_kw=plot_ratios, sharey=True)
+    #
+    xmesh, ymesh = quad_mesh(x=t_array/T, y=ks)
+    im = axes.pcolormesh(xmesh, ymesh, data_array, cmap=c_map)
+    # # Find max of absolute value for colorbar for limits symmetric around zero
+    # cmax = max(abs(data_array.flatten()))
+    # if cmax==0.0:
+    #     cmax = 0.001 # to avoid the weird jump with the first frame
+    # # Set upper and lower limits on colorbar
+    # im.set_clim(-cmax, cmax)
+    # Add colorbar to im
+    cbar = plt.colorbar(im)#, format=ticker.FuncFormatter(latex_exp))
+    cbar.ax.ticklabel_format(style='sci', scilimits=(-2,2), useMathText=True)
+    axes.set_xlabel(r'$t/T$')
+    axes.set_ylabel(r'$k$ (m$^{-1}$)')
+    # axes[1].set_title(r'$w$ (m/s)')
+    axes.set_title(r'$\Psi$ (m$^2$/s)')
+    param_formated_str = latex_exp(k)+', '+latex_exp(m)+', '+latex_exp(omega)
+    fig.suptitle(r'%s, $(k,m,\omega)$=(%s)' %(title_str, param_formated_str))
+    plt.savefig('f_1D_wave_spectra.png')
+
 ###############################################################################
 
 # Make a plot for one time slice
