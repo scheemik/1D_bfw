@@ -257,8 +257,8 @@ try:
             # w_list.append(np.copy(w['g']))
             # t_list.append(solver.sim_time)
             psi.set_scales(1)
-            psi_list = [np.copy(psi['g'])]
-            t_list = [solver.sim_time]
+            psi_list.append(np.copy(psi['g']))
+            t_list.append(solver.sim_time)
         if solver.iteration % logger_cadence == 0:
             logger.info(iteration_str %(solver.iteration, solver.sim_time/time_factor, dt/time_factor))
             # logger.info(flow_log_message.format(flow.max(flow_name)))
