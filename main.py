@@ -1,12 +1,19 @@
 """
-1D Bousinessq equations:
+# 1D Bousinessq equations:
+#
+# dz(w) + iku = 0
+# dt(b) - ka(dzz-k^2)b = -N^2*w -(wdz + iku)b
+# dt(u) - nu(dzz-k^2)u + ikp = -(wdz + iku)u
+# dt(w) - nu(dzz-k^2)w + dz(p) - b = -(wdz + iku)w
+#
+# where k is the horizontal wavenumber
 
-dz(w) + iku = 0
-dt(b) - ka(dzz-k^2)b = -N^2*w -(wdz + iku)b
-dt(u) - nu(dzz-k^2)u + ikp = -(wdz + iku)u
-dt(w) - nu(dzz-k^2)w + dz(p) - b = -(wdz + iku)w
+1D Bousinessq streamfunction equation:
 
-where k is the horizontal wavenumber
+dtt(dzz(psi) - k^2 psi) - k^2 N^2 psi + f_0 dzz(psi) - nu(dzz(psi) + k^4 psi)
+
+where k is the horizontal wavenumber, N is stratification,
+    f_0 is the Coriolis parameter, and nu is the viscosity
 
 This script should be ran serially (because it is 1D).
 
@@ -42,7 +49,8 @@ import helper_functions as hf
 import switchboard as sbp
 # Physical parameters
 nu          = sbp.nu            # [m^2/s] Viscosity (momentum diffusivity)
-kappa       = sbp.kappa         # [m^2/s] Thermal diffusivity
+#kappa       = sbp.kappa         # [m^2/s] Thermal diffusivity
+f_0         = sbp.f_0           # [s^-1]        Reference Coriolis parameter
 g           = sbp.g             # [m/s^2] Acceleration due to gravity
 # Problem parameters
 N_0         = sbp.N_0           # [rad/s]       Reference stratification
@@ -65,31 +73,36 @@ z_da        = sbp.z_da
 z           = sbp.z
 
 # Define problem
-problem = de.IVP(domain, variables=['b', 'p', 'u', 'w'])
+# problem = de.IVP(domain, variables=['b', 'p', 'u', 'w'])
+# problem.parameters['NU'] = nu
+# problem.parameters['KA'] = kappa
+# problem.parameters['N0'] = N_0
+problem = de.IVP(domain, variables=['psi', 'foo'])
 problem.parameters['NU'] = nu
-problem.parameters['KA'] = kappa
+problem.parameters['f0'] = f_0
 problem.parameters['N0'] = N_0
 
 ###############################################################################
 # Forcing from the boundary
 
 # Boundary forcing parameters
-A = sbp.A
+# A = sbp.A
+problem.parameters['A']     = sbp.A
 problem.parameters['k']     = k
 problem.parameters['m']     = m
 problem.parameters['omega'] = omega
 
-# Polarization relation from boundary forcing file
-PolRel = {'u': -A*(g*omega*m)/(N_0**2*k),
-          'w':  A*(g*omega)/(N_0**2),
-          'b':  A*g}
-        # 'p': -A*(g*m)/(k**2+m**2)}
-# Creating forcing amplitudes
-for fld in ['u', 'w', 'b']:#, 'p']:
-    BF = domain.new_field()
-    BF['g'] = PolRel[fld]
-    problem.parameters['BF' + fld] = BF  # pass function in as a parameter.
-    del BF
+# # Polarization relation from boundary forcing file
+# PolRel = {'u': -A*(g*omega*m)/(N_0**2*k),
+#           'w':  A*(g*omega)/(N_0**2),
+#           'b':  A*g}
+#         # 'p': -A*(g*m)/(k**2+m**2)}
+# # Creating forcing amplitudes
+# for fld in ['u', 'w', 'b']:#, 'p']:
+#     BF = domain.new_field()
+#     BF['g'] = PolRel[fld]
+#     problem.parameters['BF' + fld] = BF  # pass function in as a parameter.
+#     del BF
 
 # Temporal ramp for boundary forcing
 if sbp.temporal_ramp:
@@ -98,11 +111,12 @@ if sbp.temporal_ramp:
     problem.substitutions['ramp']   = "(1/2)*(tanh(4*t/(nT*T) - 2) + 1)"
 else:
     problem.substitutions['ramp']   = "1"
-# Substitutions for boundary forcing (see C-R & B eq 13.7)
-problem.substitutions['fu'] = "BFu*sin(m*z - omega*t)*ramp"
-problem.substitutions['fw'] = "BFw*sin(m*z - omega*t)*ramp"
-problem.substitutions['fb'] = "BFb*cos(m*z - omega*t)*ramp"
-# problem.substitutions['fp'] = "BFp*sin(m*z - omega*t)*ramp"
+# # Substitutions for boundary forcing (see C-R & B eq 13.7)
+# problem.substitutions['fu'] = "BFu*sin(m*z - omega*t)*ramp"
+# problem.substitutions['fw'] = "BFw*sin(m*z - omega*t)*ramp"
+# problem.substitutions['fb'] = "BFb*cos(m*z - omega*t)*ramp"
+# # problem.substitutions['fp'] = "BFp*sin(m*z - omega*t)*ramp"
+problem.substitutions['f_psi'] = "A*sin(m*z - omega*t)*ramp"
 
 ###############################################################################
 # Background Profile for N_0
@@ -119,10 +133,12 @@ problem.parameters['win_bf'] = win_bf
 problem.parameters['tau_bf'] = sbp.tau_bf # [s] time constant for sponge layer
 
 # Creating forcing terms
-for fld in ['u', 'w', 'b']:#, 'p']:
-    # terms will be = win_bf * (f(psi) - psi)
-    problem.substitutions['F_term_' + fld] = "win_bf * (f"+fld+" - "+fld+")/tau_bf"
+# for fld in ['u', 'w', 'b']:#, 'p']:
+#     # terms will be = win_bf * (f(psi) - psi)
+#     problem.substitutions['F_term_' + fld] = "win_bf * (f"+fld+" - "+fld+")/tau_bf"
 # problem.substitutions['bf_term'] = " win_bf * (a*sin(-m*z - omega*t) - w)*ramp"
+#   Terms will be = win_bf * (f(psi) - psi)
+problem.substitutions['F_term_psi'] = "win_bf * (f_psi - psi)/tau_bf"
 
 ###############################################################################
 # Sponge window
@@ -132,9 +148,10 @@ problem.parameters['win_sp'] = win_sp
 problem.parameters['tau_sp'] = sbp.tau_sp # [s] time constant for sponge layer
 
 # Creating sponge terms
-for fld in ['u', 'w', 'b']:#, 'p']:
-    problem.substitutions['S_term_' + fld] = "win_sp * "+fld+" / tau_sp"
+# for fld in ['u', 'w', 'b']:#, 'p']:
+#     problem.substitutions['S_term_' + fld] = "win_sp * "+fld+" / tau_sp"
 # problem.substitutions['sp_term'] = "-win_sp * w / tau"
+problem.substitutions['S_term_psi'] = "win_sp * psi / tau_sp"
 
 ###############################################################################
 # Plotting windows
@@ -146,16 +163,23 @@ if sbp.plot_windows:
 #   Non-linear terms and NCC need to be on RHS
 #   BP, F_terms, S_terms are NCC, Advection is nonlinear
 
-problem.add_equation("dz(w) - k*u = 0")
-problem.add_equation("dt(b) - KA*(dz(dz(b)) - (k**2)*b) " \
-                     " = -((N0*BP)**2)*w - (w*dz(b) + k*u*b) " \
-                     " + F_term_b - S_term_b ")
-problem.add_equation("dt(u) - NU*(dz(dz(u)) - (k**2)*u) + k*p " \
-                     " = - (w*dz(u) + k*u*u) " \
-                     " + F_term_u - S_term_u ")
-problem.add_equation("dt(w) - NU*(dz(dz(w)) - (k**2)*w) + dz(p) - b " \
-                     " = - (w*dz(w) + k*u*w) " \
-                     " + F_term_w - S_term_w ")
+# problem.add_equation("dz(w) - k*u = 0")
+# problem.add_equation("dt(b) - KA*(dz(dz(b)) - (k**2)*b) " \
+#                      " = -((N0*BP)**2)*w - (w*dz(b) + k*u*b) " \
+#                      " + F_term_b - S_term_b ")
+# problem.add_equation("dt(u) - NU*(dz(dz(u)) - (k**2)*u) + k*p " \
+#                      " = - (w*dz(u) + k*u*u) " \
+#                      " + F_term_u - S_term_u ")
+# problem.add_equation("dt(w) - NU*(dz(dz(w)) - (k**2)*w) + dz(p) - b " \
+#                      " = - (w*dz(w) + k*u*w) " \
+#                      " + F_term_w - S_term_w ")
+
+problem.add_equation("dt( dz(dz(foo)) - (k**2)*foo ) + f0*(dz(dz(psi))) " \
+                     " - NU*(dz(dz(dz(dz(psi)))) + (k**4)*psi) " \
+                     " = (k**2)*((N0*BP)**2)*psi " \
+                     " + F_term_psi - S_term_psi ")
+# LHS must be first-order in ['dt'], so I'll define a temp variable
+problem.add_equation("foo - dt(psi) = 0")
 
 # Build solver
 solver = problem.build_solver(de.timesteppers.SBDF2)
@@ -169,13 +193,15 @@ solver.stop_iteration = sbp.stop_iteration
 ###############################################################################
 
 # Initial conditions
-b = solver.state['b']
-u = solver.state['u']
-w = solver.state['w']
+# b = solver.state['b']
+# u = solver.state['u']
+# w = solver.state['w']
+psi = solver.state['psi']
 
-b['g'] = 0.0
-u['g'] = 0.0
-w['g'] = 0.0
+# b['g'] = 0.0
+# u['g'] = 0.0
+# w['g'] = 0.0
+psi['g'] = 0.0
 
 ###############################################################################
 # Analysis
@@ -188,16 +214,16 @@ snapshots.add_system(solver.state)
 
 ###############################################################################
 # CFL
-CFL = flow_tools.CFL(solver, initial_dt=sbp.dt, cadence=sbp.CFL_cadence,
-                     safety=sbp.CFL_safety, max_change=sbp.CFL_max_change,
-                     min_change=sbp.CFL_min_change, max_dt=sbp.CFL_max_dt,
-                     threshold=sbp.CFL_threshold)
-CFL.add_velocities(('w'))
+# CFL = flow_tools.CFL(solver, initial_dt=sbp.dt, cadence=sbp.CFL_cadence,
+#                      safety=sbp.CFL_safety, max_change=sbp.CFL_max_change,
+#                      min_change=sbp.CFL_min_change, max_dt=sbp.CFL_max_dt,
+#                      threshold=sbp.CFL_threshold)
+# CFL.add_velocities(('w'))
 ###############################################################################
 # Flow properties
-flow_name       = sbp.flow_name
-flow            = flow_tools.GlobalFlowProperty(solver, cadence=sbp.flow_cadence)
-flow.add_property(sbp.flow_property, name=flow_name)
+# flow_name       = sbp.flow_name
+# flow            = flow_tools.GlobalFlowProperty(solver, cadence=sbp.flow_cadence)
+# flow.add_property(sbp.flow_property, name=flow_name)
 ###############################################################################
 # Logger parameters
 endtime_str     = sbp.endtime_str
@@ -208,8 +234,11 @@ iteration_str   = sbp.iteration_str
 flow_log_message= sbp.flow_log_message
 ###############################################################################
 # Store data for final plot
-w.set_scales(1)
-w_list = [np.copy(w['g'])]
+# w.set_scales(1)
+# w_list = [np.copy(w['g'])]
+# t_list = [solver.sim_time]
+psi.set_scales(1)
+psi_list = [np.copy(psi['g'])]
 t_list = [solver.sim_time]
 ###############################################################################
 # Main loop
@@ -220,18 +249,21 @@ try:
     dt = sbp.dt
     while solver.proceed:
         # Adaptive time stepping controlled from switchboard
-        if (adapt_dt):
-            dt = CFL.compute_dt()
+        # if (adapt_dt):
+        #     dt = CFL.compute_dt()
         solver.step(dt)
         if solver.iteration % 1 == 0:
-            w.set_scales(1)
-            w_list.append(np.copy(w['g']))
-            t_list.append(solver.sim_time)
+            # w.set_scales(1)
+            # w_list.append(np.copy(w['g']))
+            # t_list.append(solver.sim_time)
+            psi.set_scales(1)
+            psi_list = [np.copy(psi['g'])]
+            t_list = [solver.sim_time]
         if solver.iteration % logger_cadence == 0:
             logger.info(iteration_str %(solver.iteration, solver.sim_time/time_factor, dt/time_factor))
-            logger.info(flow_log_message.format(flow.max(flow_name)))
-            if np.isnan(flow.max(flow_name)):
-                raise NameError('Code blew up it seems')
+            # logger.info(flow_log_message.format(flow.max(flow_name)))
+            # if np.isnan(flow.max(flow_name)):
+            #     raise NameError('Code blew up it seems')
 except:
     logger.error('Exception raised, triggering end of main loop.')
     raise
@@ -244,8 +276,12 @@ finally:
 
 
 # Create space-time plot
-w_array = np.transpose(np.array(w_list))
+# w_array = np.transpose(np.array(w_list))
+# t_array = np.array(t_list)
+psi_array = np.transpose(np.array(psi_list))
 t_array = np.array(t_list)
 
+# if sbp.plot_spacetime:
+#     hf.plot_z_vs_t(z, t_array, T, w_array, BP_array, k, m, omega, sbp.z0_dis, sbp.zf_dis, title_str=run_name)
 if sbp.plot_spacetime:
-    hf.plot_z_vs_t(z, t_array, T, w_array, BP_array, k, m, omega, sbp.z0_dis, sbp.zf_dis, title_str=run_name)
+    hf.plot_z_vs_t(z, t_array, T, psi_array, BP_array, k, m, omega, sbp.z0_dis, sbp.zf_dis, title_str=run_name)
