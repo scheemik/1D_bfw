@@ -144,17 +144,18 @@ if sbp.plot_windows:
 ###############################################################################
 # Define equations
 #   Non-linear terms and NCC need to be on RHS
+#   BP, F_terms, S_terms are NCC, Advection is nonlinear
 
 problem.add_equation("dz(w) - k*u = 0")
 problem.add_equation("dt(b) - KA*(dz(dz(b)) - (k**2)*b) " \
-                     " = -((N0*BP)**2)*w - (w*dz(b) + k*u*b) " \ # BP is a NCC
-                     " + F_term_b - S_term_b ")         # bf and sp are NCC
+                     " = -((N0*BP)**2)*w - (w*dz(b) + k*u*b) " \
+                     " + F_term_b - S_term_b ")
 problem.add_equation("dt(u) - NU*(dz(dz(u)) - (k**2)*u) + k*p " \
-                     " = - (w*dz(u) + k*u*u) " \        # Advection is non-linear
-                     " + F_term_u - S_term_u ")         # bf and sp are NCC
+                     " = - (w*dz(u) + k*u*u) " \
+                     " + F_term_u - S_term_u ")
 problem.add_equation("dt(w) - NU*(dz(dz(w)) - (k**2)*w) + dz(p) - b " \
-                     " = - (w*dz(w) + k*u*w) " \        # Advection is non-linear
-                     " + F_term_w - S_term_w ")         # bf and sp are NCC
+                     " = - (w*dz(w) + k*u*w) " \
+                     " + F_term_w - S_term_w ")
 
 # Build solver
 solver = problem.build_solver(de.timesteppers.SBDF2)

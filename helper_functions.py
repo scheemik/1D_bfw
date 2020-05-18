@@ -161,33 +161,6 @@ def format_labels_and_ticks(ax, hori_label):
 ###############################################################################
 # Plotting colors from style guide
 
-my_clrs       =  {'b': TAB_COLORS['tab:blue'],
-                  'w': (1, 0, 0),               # - r
-                  'u': (0, 0, 1),               # - b
-                  'v'  : (0, 0.5, 0),           # - g
-                  'p': CSS4_COLORS['plum'],
-                  'diffusion': CSS4_COLORS['peru'],
-                  'viscosity': CSS4_COLORS['peru'],
-                  'N_0': TAB_COLORS['tab:blue'],
-                  'rho': CSS4_COLORS['slateblue'],
-                  'advection': CSS4_COLORS['indianred'],
-                  'coriolis': CSS4_COLORS['teal'],
-                  'omega': CSS4_COLORS['slategray'],
-                  'F_bf': '#008080',            # - teal
-                  'F_sp': '#CD853F',            # - peru
-                  'temperature': '#B22222',     # - firebrick
-                  'salinity': '#4682B4',        # - steelblue
-                  'incident': '#8A2BE2',        # - blueviolet
-                  'transmission': '#4169E1',    # - royalblue
-                  'reflection': '#FF6347',      # - tomato
-                  'linear': CSS4_COLORS['forestgreen'],
-                  'nonlinear': CSS4_COLORS['indianred'],
-                  'arctic': CSS4_COLORS['cornflowerblue'],
-                  'cold-fresh': CUSTOM_COLORS['lightcornflowerblue2'],
-                  'warm-salty': CUSTOM_COLORS['lightred3'],
-                  'black': (0, 0, 0),
-                  'white': (1, 1, 1)}
-
 CUSTOM_COLORS ={'lightcornflowerblue2': '#a4c2f4',
                 'lightred3': '#f2c1c1'}
 
@@ -351,3 +324,31 @@ CSS4_COLORS =  {'aliceblue': '#F0F8FF',
                 'whitesmoke': '#F5F5F5',
                 'yellow': '#FFFF00',
                 'yellowgreen': '#9ACD32'}
+
+
+my_clrs       =  {'b': TAB_COLORS['tab:blue'],
+                  'w': (1, 0, 0),               # - r
+                  'u': (0, 0, 1),               # - b
+                  'v'  : (0, 0.5, 0),           # - g
+                  'p': CSS4_COLORS['plum'],
+                  'diffusion': CSS4_COLORS['peru'],
+                  'viscosity': CSS4_COLORS['peru'],
+                  'N_0': TAB_COLORS['tab:blue'],
+                  'rho': CSS4_COLORS['slateblue'],
+                  'advection': CSS4_COLORS['indianred'],
+                  'coriolis': CSS4_COLORS['teal'],
+                  'omega': CSS4_COLORS['slategray'],
+                  'F_bf': '#008080',            # - teal
+                  'F_sp': '#CD853F',            # - peru
+                  'temperature': '#B22222',     # - firebrick
+                  'salinity': '#4682B4',        # - steelblue
+                  'incident': '#8A2BE2',        # - blueviolet
+                  'transmission': '#4169E1',    # - royalblue
+                  'reflection': '#FF6347',      # - tomato
+                  'linear': CSS4_COLORS['forestgreen'],
+                  'nonlinear': CSS4_COLORS['indianred'],
+                  'arctic': CSS4_COLORS['cornflowerblue'],
+                  'cold-fresh': CUSTOM_COLORS['lightcornflowerblue2'],
+                  'warm-salty': CUSTOM_COLORS['lightred3'],
+                  'black': (0, 0, 0),
+                  'white': (1, 1, 1)}
