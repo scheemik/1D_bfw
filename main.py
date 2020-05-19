@@ -240,8 +240,9 @@ flow_log_message= sbp.flow_log_message
 # w_list = [np.copy(w['g'])]
 # t_list = [solver.sim_time]
 psi.set_scales(1)
-psi_gs = [np.copy(psi['g'])]
-psi_cs = [np.copy(psi['c'])]
+psi_gs = [np.copy(psi['g']).real] # Plotting functions require float64, not complex128
+psi_cr = [np.copy(psi['c']).real]
+psi_ci = [np.copy(psi['c']).imag]
 t_list = [solver.sim_time]
 ###############################################################################
 # Main loop
@@ -260,8 +261,9 @@ try:
             # w_list.append(np.copy(w['g']))
             # t_list.append(solver.sim_time)
             psi.set_scales(1)
-            psi_gs.append(np.copy(psi['g']))
-            psi_cs.append(np.copy(psi['c']))
+            psi_gs.append(np.copy(psi['g']).real)
+            psi_cr.append(np.copy(psi['c']).real)
+            psi_ci.append(np.copy(psi['c']).imag)
             t_list.append(solver.sim_time)
         if solver.iteration % logger_cadence == 0:
             logger.info(iteration_str %(solver.iteration, solver.sim_time/time_factor, dt/time_factor))
@@ -283,7 +285,8 @@ finally:
 # w_array = np.transpose(np.array(w_list))
 # t_array = np.array(t_list)
 psi_g_array = np.transpose(np.array(psi_gs))
-psi_c_array = np.transpose(np.array(psi_cs))
+psi_c_reals = np.transpose(np.array(psi_cr))
+psi_c_imags = np.transpose(np.array(psi_ci))
 t_array = np.array(t_list)
 
 # if sbp.plot_spacetime:
@@ -292,4 +295,4 @@ if sbp.plot_spacetime:
     hf.plot_z_vs_t(z, t_array, T, psi_g_array, BP_array, k, m, omega, sbp.z0_dis, sbp.zf_dis, title_str=run_name)
 
 if sbp.plot_wavespace:
-    hf.plot_k_vs_t(ks, t_array, T, psi_g_array, k, m, omega, sbp.z0_dis, sbp.zf_dis, title_str=run_name)
+    hf.plot_k_vs_t(ks, t_array, T, psi_c_reals, psi_c_imags, k, m, omega, sbp.z0_dis, sbp.zf_dis, title_str=run_name)

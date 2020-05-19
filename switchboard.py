@@ -80,7 +80,7 @@ dealias= 3/2                    # [] dealiasing factor
 
 # Bases and domain
 z_basis = de.Fourier('z', nz, interval=(z0, zf), dealias=dealias)
-domain = de.Domain([z_basis], np.float64)
+domain = de.Domain([z_basis], grid_dtype=np.complex128)#float64)
 # Z grid
 z_da = domain.grid(0, scales=domain.dealias)
 z = domain.grid(0)
