@@ -157,9 +157,9 @@ def plot_k_vs_t(ks, t_array, T, real_array, imag_array, k, m, omega, z0_dis=None
     # # Set upper and lower limits on colorbar
     # im.set_clim(-cmax, cmax)
     # Add colorbar to im
-    cbar_r = plt.colorbar(im_r)#, format=ticker.FuncFormatter(latex_exp))
+    cbar_r = plt.colorbar(im_r, ax=axes[0])#, format=ticker.FuncFormatter(latex_exp))
     cbar_r.ax.ticklabel_format(style='sci', scilimits=(-2,2), useMathText=True)
-    cbar_i = plt.colorbar(im_i)#, format=ticker.FuncFormatter(latex_exp))
+    cbar_i = plt.colorbar(im_i, ax=axes[1])#, format=ticker.FuncFormatter(latex_exp))
     cbar_i.ax.ticklabel_format(style='sci', scilimits=(-2,2), useMathText=True)
     axes[1].set_xlabel(r'$t/T$')
     axes[0].set_ylabel(r'$k$ (m$^{-1}$)')
