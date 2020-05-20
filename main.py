@@ -289,6 +289,16 @@ psi_c_reals = np.transpose(np.array(psi_cr))
 psi_c_imags = np.transpose(np.array(psi_ci))
 t_array = np.array(t_list)
 
+# Save arrays to files
+arrays = {'psi_g_array':psi_g_array,
+          'psi_c_reals':psi_c_reals,
+          'psi_c_imags':psi_c_imags,
+          't_array':t_array}
+for arr in arrays:
+    file = open('arrays/'+arr, "wb")
+    np.save(file, arrays[arr])
+    file.close
+
 # if sbp.plot_spacetime:
 #     hf.plot_z_vs_t(z, t_array, T, w_array, BP_array, k, m, omega, sbp.z0_dis, sbp.zf_dis, title_str=run_name)
 if sbp.plot_spacetime:
