@@ -7,6 +7,7 @@ This contains helper functions for the Dedalus code so the same version of funct
 import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import matplotlib.colors as clrs
 from matplotlib import ticker
 from dedalus.extras.plot_tools import quad_mesh, pad_limits
 
@@ -166,6 +167,9 @@ def plot_k_vs_t(ks, t_array, T, real_array, imag_array, k, m, omega, c_map='RdBu
     axes[1].set_ylabel(r'$k$ (m$^{-1}$)')
     axes[0].set_title(r'real')
     axes[1].set_title(r'imag')
+    wiggle_room = 3
+    axes[0].set_ylim([wiggle_room*k, -wiggle_room*k])
+    axes[1].set_ylim([wiggle_room*k, -wiggle_room*k])
     param_formated_str = latex_exp(k)+', '+latex_exp(m)+', '+latex_exp(omega)
     fig.suptitle(r'%s, $(k,m,\omega)$=(%s)' %(title_str, param_formated_str))
     plt.savefig('f_1D_wave_spectra.png')

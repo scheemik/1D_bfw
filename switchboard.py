@@ -151,7 +151,7 @@ g           = 9.81          # [m/s^2] Acceleration due to gravity
 ###############################################################################
 # Plotting parameters
 
-plot_spacetime = True
+plot_spacetime = False
 plot_wavespace = True
 plot_windows   = True
 
