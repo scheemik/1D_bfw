@@ -137,7 +137,7 @@ def plot_z_vs_t(z, t_array, T, w_array, BP_array, k, m, omega, z0_dis=None, zf_d
     fig.suptitle(r'%s, $(k,m,\omega)$=(%s)' %(title_str, param_formated_str))
     plt.savefig('f_1D_wave.png')
 
-def plot_k_vs_t(ks, t_array, T, real_array, imag_array, k, m, omega, z0_dis=None, zf_dis=None, c_map='RdBu_r', title_str='Forced 1D Wave'):
+def plot_k_vs_t(ks, t_array, T, real_array, imag_array, k, m, omega, c_map='RdBu_r', title_str='Forced 1D Wave'):
     # Set aspect ratio of overall figure
     w, h = mpl.figure.figaspect(0.5)
     # This dictionary makes each subplot have the desired ratios

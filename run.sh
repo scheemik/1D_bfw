@@ -14,6 +14,8 @@ DATETIME=`date +"%Y-%m-%d_%Hh%M"`
 # VER = 1
 #	-> run the script
 # VER = 2
+#	-> plot z vs. t and k vs. t for Psi
+# VER = 3
 #	-> merge, plot frames, create gif, create mp4, etc
 
 while getopts n:c:v: option
@@ -57,7 +59,11 @@ switch_file="switchboard"
 snapshot_path="snapshots"
 # Name of merging file
 merge_file="merge.py"
-# Name of plotting file
+# Name of first plotting file
+plot_first="plot_first.py"
+# Path to array files
+array_path="arrays"
+# Name of slice plotting file
 plot_file="plot_slices.py"
 # Name of output directory
 output_dir="outputs"
@@ -79,22 +85,51 @@ then
 		echo "Removing old snapshots"
 		rm -rf $snapshot_path
 	fi
-    echo "Running Dedalus script for local pc"
+	# Check if arrays already exist. If so, remove them
+	if [ -e $array_path ]
+	then
+		echo "Removing old arrays"
+		rm -rf $array_path
+	fi
+	mkdir $array_path
+  echo "Running Dedalus script for local pc"
 	if [ $CORES -eq 1 ]
 	then
 		${python_command} $code_file $NAME $switch_file
 	else
-	    # mpiexec uses -n flag for number of processes to use
-	    ${mpiexec_command} -n $CORES ${python_command} $code_file $NAME $switch_file
+	  # mpiexec uses -n flag for number of processes to use
+	  ${mpiexec_command} -n $CORES ${python_command} $code_file $NAME $switch_file
 	fi
     echo ""
 	echo 'Done running script'
 fi
 
 ###############################################################################
+# plot z vs. t and k vs. t for Psi
+#	if (VER = 0, 1, 2)
+if [ $VER -eq 0 ] || [ $VER -eq 1 ] || [ $VER -eq 2 ]
+then
+	echo ''
+	echo '--Checking for array files--'
+	# Check to make sure snapshots folder exists
+	echo "Checking for arrays in directory: $array_path"
+	if [ -e $array_path ]
+	then
+		echo "Found arrays"
+	else
+		echo "Cannot find arrays. Aborting script"
+		exit 1
+	fi
+  echo "Plotting first"
+	${python_command} $plot_first $NAME $switch_file
+  echo ""
+	echo 'Done'
+fi
+
+###############################################################################
 # merge snapshots
-#	if (VER = 0, 2)
-if [ $VER -eq 0 ] || [ $VER -eq 2 ]
+#	if (VER = 0, 3)
+if [ $VER -eq 0 ] || [ $VER -eq 3 ]
 then
 	echo ''
 	echo '--Merging snapshots--'
@@ -137,8 +172,8 @@ fi
 
 ###############################################################################
 # plot frames - note: already checked if snapshots exist in step above
-#	if (VER = 0, 2)
-if [ $VER -eq 0 ] || [ $VER -eq 2 ]
+#	if (VER = 0, 3)
+if [ $VER -eq 0 ] || [ $VER -eq 3 ]
 then
 	echo ''
 	echo '--Plotting frames--'
@@ -154,8 +189,8 @@ fi
 
 ###############################################################################
 # create gif
-#	if (VER = 0, 2)
-if [ $VER -eq 0 ] || [ $VER -eq 2 ]
+#	if (VER = 0, 3)
+if [ $VER -eq 0 ] || [ $VER -eq 3 ]
 then
 	echo ''
 	echo '--Creating gif--'
