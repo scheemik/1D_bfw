@@ -79,7 +79,7 @@ ks          = sbp.ks
 # problem.parameters['NU'] = nu
 # problem.parameters['KA'] = kappa
 # problem.parameters['N0'] = N_0
-problem = de.IVP(domain, variables=['psi', 'foo'])
+problem = de.IVP(domain, variables=['psi', 'foo', 'psi_filtered'])
 problem.parameters['NU'] = nu
 problem.parameters['f0'] = f_0
 problem.parameters['N0'] = N_0
@@ -126,6 +126,13 @@ BP = domain.new_field(name = 'BP')
 BP_array = hf.BP_n_steps(sbp.n_steps, z, sbp.z0_dis, sbp.zf_dis, sbp.step_th)
 BP['g'] = BP_array
 problem.parameters['BP'] = BP
+
+###############################################################################
+# Masking to keep just display domain
+DD_mask = domain.new_field(name = 'DD_mask')
+DD_array = hf.make_DD_mask(z, sbp.z0_dis, sbp.zf_dis)
+DD_mask['g'] = DD_array
+problem.parameters['DD_mask'] = DD_mask
 
 ###############################################################################
 # Boundary forcing window
@@ -182,6 +189,8 @@ problem.add_equation("dt( dz(dz(foo)) - (k**2)*foo ) + f0*(dz(dz(psi))) " \
                      " + F_term_psi - S_term_psi ")
 # LHS must be first-order in ['dt'], so I'll define a temp variable
 problem.add_equation("foo - dt(psi) = 0")
+# Create copy of psi which is masked to the display domain
+problem.add_equation("psi_filtered = DD_mask*psi")
 
 # Build solver
 solver = problem.build_solver(de.timesteppers.SBDF2)
@@ -199,6 +208,7 @@ solver.stop_iteration = sbp.stop_iteration
 # u = solver.state['u']
 # w = solver.state['w']
 psi = solver.state['psi']
+psi_filtered = solver.state['psi_filtered']
 
 # b['g'] = 0.0
 # u['g'] = 0.0

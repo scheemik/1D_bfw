@@ -66,6 +66,21 @@ def BP_n_steps(n, z, z0_dis, zf_dis, th):
                 BP_array[j] = 0
     return BP_array
 
+# Mask to just keep display domain
+def make_DD_mask(z, z0_dis, zf_dis):
+    """
+    z           array of z values
+    z0_dis      bottom of display domain
+    zf_dis      top of display domain
+    """
+    # create blank array the same size as z
+    DD_array = z*0
+    # Set display domain range to have value 1
+    for i in range(len(DD_array)):
+        if z[i] < zf_dis and z[i] > z0_dis:
+            DD_array[i] = 1
+    return DD_array
+
 def add_dis_bounds(ax, z0_dis=None, zf_dis=None):
     line_color = my_clrs['black']
     if z0_dis != None:
