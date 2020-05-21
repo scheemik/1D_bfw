@@ -211,6 +211,14 @@ def format_labels_and_ticks(ax, hori_label):
     ax.xaxis.set_ticks([x0, 0.0, xf])
     ax.xaxis.set_major_formatter(ticker.FuncFormatter(latex_exp))
 
+def format_labels_and_ticks_v(ax, vert_label):
+    # add labels
+    ax.set_ylabel(vert_label)
+    # fix vertical ticks
+    y0, yf = ax.get_ylim()
+    ax.yaxis.set_ticks([y0, 0.0, yf])
+    ax.yaxis.set_major_formatter(ticker.FuncFormatter(latex_exp))
+
 ###############################################################################
 # Plotting colors from style guide
 
