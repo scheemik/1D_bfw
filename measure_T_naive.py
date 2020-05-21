@@ -50,24 +50,15 @@ T           = sbp.T             # [s]           Wave period
 # Domain parameters
 z0_dis      = sbp.z0_dis        # [m]           The bottom of the displayed domain
 zf_dis      = sbp.zf_dis        # [m]           The top of the displayed z domain
-z_I         = zf_dis            # [m]           Depth at which I' will be measured
-z_T         = (z0_dis-zf_dis)/2 # [m]           Depth at which T' will be measured
+z_I         = zf_dis - (2/m)    # [m]           Depth at which I' will be measured
+z_T = (z0_dis-zf_dis)/2 - (2/m) # [m]           Depth at which T' will be measured
 
 ###############################################################################
 # Get depth and wavenumber axes
 z           = sbp.z
 ks          = sbp.ks
 
-# Save arrays to files
-arrays = {'psi_g_array':[],
-          'psi_c_reals':[],
-          'psi_c_imags':[],
-          't_array':[],
-          'BP_array':[]}
-for arr in arrays:
-    file = open('arrays/'+arr, "rb")
-    arrays[arr] = np.load(file)
-    file.close
+###############################################################################
 
 def take_closest(myList, myNumber, returns='index'):
     """
@@ -95,15 +86,7 @@ def take_closest(myList, myNumber, returns='index'):
         elif returns=='value':
             return before
 
-# print('z_I = ',z_I)
-# z_Ii = take_closest(z, z_I)
-# print('z_Ic = ',z[z_Ii])
-# print('')
-# print('z_T = ',z_T)
-# z_Ti = take_closest(z, z_T)
-# print('z_Tc = ',z[z_Ti])
-
-def plot_I_and_T(z, z_I, z_T, t_array, data_array, k, m, omega, title_str='Forced 1D Wave'):
+def plot_I_and_T(z, i_I, i_T, t_array, data_array, k, m, omega, title_str='Forced 1D Wave'):
     # Set aspect ratio of overall figure
     w, h = mpl.figure.figaspect(0.5)
     # This dictionary makes each subplot have the desired ratios
@@ -112,14 +95,11 @@ def plot_I_and_T(z, z_I, z_T, t_array, data_array, k, m, omega, title_str='Force
                    'width_ratios': [1]}
     # Set ratios by passing dictionary as 'gridspec_kw', and share y axis
     fig, axes = plt.subplots(figsize=(w,h), nrows=2, ncols=1, gridspec_kw=plot_ratios, sharey=True)
-    # Find indices of closest values of z to z_I and z_T
-    i_I = take_closest(z, z_I)
-    i_T = take_closest(z, z_T)
     # plot lines of psi vs. t
     axes[0].plot(t_array, data_array[i_I])
-    hf.format_labels_and_ticks_v(axes[0], r'$\Psi$')
+    hf.format_labels_and_ticks_v(axes[0], r'$\Psi^2$')
     axes[1].plot(t_array, data_array[i_T])
-    hf.format_labels_and_ticks_v(axes[1], r'$\Psi$')
+    hf.format_labels_and_ticks_v(axes[1], r'$\Psi^2$')
     #
     axes[0].set_xticklabels([])
     axes[1].set_xlabel(r'$t/T$')
@@ -129,4 +109,46 @@ def plot_I_and_T(z, z_I, z_T, t_array, data_array, k, m, omega, title_str='Force
     fig.suptitle(r'%s, $(k,m,\omega)$=(%s)' %(title_str, param_formated_str))
     plt.savefig('f_1D_I_and_T.png')
 
-plot_I_and_T(z, z_I, z_T, arrays['t_array']/T, arrays['psi_g_array'], k, m, omega)
+def calc_I_and_T(i_I, i_T, t_array, data_array, t_interval_I, t_interval_T):
+    # This returns the root mean square values of I and T
+    #   I'm using arbitrary time intervals, i.e. t_interval_I=(I_t_i, I_t_f)
+    #
+    # Square of data at the two choosen depths
+    I_slice = np.square(data_array[i_I])
+    T_slice = np.square(data_array[i_T])
+    # Find indicies of choosen time intervals
+    ti_I_i = take_closest(t_array, t_interval_I[0])
+    ti_I_f = take_closest(t_array, t_interval_I[1])
+    ti_T_i = take_closest(t_array, t_interval_T[0])
+    ti_T_f = take_closest(t_array, t_interval_T[1])
+    # Filter to choosen times
+    I_slice = I_slice[ti_I_i:ti_I_f]
+    T_slice = T_slice[ti_T_i:ti_T_f]
+    # Mean and square root
+    I = np.sqrt(np.mean(I_slice))
+    T = np.sqrt(np.mean(T_slice))
+    return I, T
+
+###############################################################################
+# Save arrays to files
+arrays = {'psi_g_array':[],
+          'psi_c_reals':[],
+          'psi_c_imags':[],
+          't_array':[],
+          'BP_array':[]}
+for arr in arrays:
+    file = open('arrays/'+arr, "rb")
+    arrays[arr] = np.load(file)
+    file.close
+
+# Find indices of closest values of z to z_I and z_T
+i_I = take_closest(z, z_I)
+i_T = take_closest(z, z_T)
+
+plot_I_and_T(z, i_I, i_T, arrays['t_array']/T, np.square(arrays['psi_g_array']), k, m, omega)
+
+I, T = calc_I_and_T(i_I, i_T, arrays['t_array']/T, arrays['psi_g_array'], (7.0,10.0), (12.0,15.0))
+
+print("I' = ",I)
+print("T' = ",T)
+print("T'/I' = ",T/I)
