@@ -212,7 +212,6 @@ def plot_task(ax, time_i, task_j, z_ax, dsets):
 
 def find_tick_locations(x0, xf, n_ticks=3):
     locs = [0]*n_ticks
-    print('length of locs = ',len(locs))
     locs[0]  = x0
     locs[-1] = xf
     if n_ticks <= 3 and x0 < 0 and xf>0:
@@ -221,7 +220,6 @@ def find_tick_locations(x0, xf, n_ticks=3):
         spacing = (xf-x0)/(n_ticks-1)
         for i in range(1,n_ticks):
             locs[i] = x0 + spacing*i
-    print(locs)
     return locs
 
 def format_labels_and_ticks(ax, hori_label, n_ticks=3, tick_formatter=latex_exp):

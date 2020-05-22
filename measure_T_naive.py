@@ -50,8 +50,9 @@ T           = sbp.T             # [s]           Wave period
 # Domain parameters
 z0_dis      = sbp.z0_dis        # [m]           The bottom of the displayed domain
 zf_dis      = sbp.zf_dis        # [m]           The top of the displayed z domain
+step_th     = sbp.step_th       # [m]           The thickness of the layer
 z_I         = zf_dis - (2/m)    # [m]           Depth at which I' will be measured
-z_T = (z0_dis-zf_dis)/2 - (2/m) # [m]           Depth at which T' will be measured
+z_T = (z0_dis-zf_dis-step_th)/2 - (2/m) # [m]           Depth at which T' will be measured
 
 ###############################################################################
 # Get depth and wavenumber axes
