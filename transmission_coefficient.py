@@ -8,7 +8,9 @@ import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib import ticker
-from dedalus.extras.plot_tools import quad_mesh, pad_limits
+import colorcet as cc
+# Add functions in helper file
+import helper_functions as hf
 
 ###############################################################################
 
@@ -18,6 +20,12 @@ nx = 1000
 y_min = 0
 y_max = 5
 ny = 1000
+
+# points of interest
+theta_1 = np.pi/4 # 45 degrees
+mL_1    = 1.0
+theta_2 = np.pi/4 # 45 degrees
+mL_2    = 3.5
 
 x = np.linspace(x_min, x_max, nx)
 y = np.linspace(y_min, y_max, ny)
@@ -29,13 +37,16 @@ def T_for_1_layer(theta, mL):
 Tcoeff = T_for_1_layer(theta, mL)
 
 fig, axes = plt.subplots(nrows=1, ncols=1)
-im = axes.pcolormesh(theta, mL, Tcoeff, cmap='jet')
+im = axes.pcolormesh(theta, mL, Tcoeff, cmap=cc.cm.linear_worb_100_25_c53)
+axes.plot(theta_1, mL_1, 'ko', markersize=10, markerfacecolor='none', markeredgewidth=1.0)
+axes.plot(theta_2, mL_2, 'ko', markersize=10, markerfacecolor='none', markeredgewidth=1.0)
 cbar = plt.colorbar(im)#, format=ticker.FuncFormatter(latex_exp))
-axes.set_xlabel(r'$\theta_1$')
+hf.format_labels_and_ticks(axes, r'$\theta_1$', n_ticks=4, tick_formatter=hf.rad_to_degs)
+# axes.set_xlabel(r'$\theta_1$')
 axes.set_ylabel(r'$m_0L$')
 axes.set_title(r'$|\mathcal{T}|/|\mathcal{I}|$ for 1 layer')
 
 plt.savefig('Tcoeff_Ghaemsaidi_fig3a.png')
 
-print('For mL=3.5 and theta=45, T=',str(T_for_1_layer(np.pi/4, 3.5)))
-print('For mL=1.0 and theta=45, T=',str(T_for_1_layer(np.pi/4, 1.0)))
+print('For mL=1.0 and theta=45, T=',str(T_for_1_layer(theta_1, mL_1)))
+print('For mL=3.5 and theta=45, T=',str(T_for_1_layer(theta_2, mL_2)))

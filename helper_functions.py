@@ -5,6 +5,7 @@ This contains helper functions for the Dedalus code so the same version of funct
 """
 
 import numpy as np
+import math
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.colors as clrs
@@ -39,6 +40,12 @@ def latex_exp(num, pos=None):
             return r"{0}".format(str1)
         else:
             return float_str
+
+# takes in a value in radians and outputs the value in degrees
+def rad_to_degs(num, pos=None):
+    deg = int(round(math.degrees(num)))
+    deg_str = str(deg) + r'$^\circ$'
+    return deg_str
 
 ###############################################################################
 
@@ -203,13 +210,28 @@ def plot_task(ax, time_i, task_j, z_ax, dsets):
     ax.set_xlim(-xmax, xmax)
     ax.set_ylim(z_ax[0], z_ax[-1])
 
-def format_labels_and_ticks(ax, hori_label):
+def find_tick_locations(x0, xf, n_ticks=3):
+    locs = [0]*n_ticks
+    print('length of locs = ',len(locs))
+    locs[0]  = x0
+    locs[-1] = xf
+    if n_ticks <= 3 and x0 < 0 and xf>0:
+        locs[1] = 0.0
+    else:
+        spacing = (xf-x0)/(n_ticks-1)
+        for i in range(1,n_ticks):
+            locs[i] = x0 + spacing*i
+    print(locs)
+    return locs
+
+def format_labels_and_ticks(ax, hori_label, n_ticks=3, tick_formatter=latex_exp):
     # add labels
     ax.set_xlabel(hori_label)
     # fix horizontal ticks
     x0, xf = ax.get_xlim()
-    ax.xaxis.set_ticks([x0, 0.0, xf])
-    ax.xaxis.set_major_formatter(ticker.FuncFormatter(latex_exp))
+    tick_locs = find_tick_locations(x0, xf, n_ticks)
+    ax.xaxis.set_ticks(tick_locs)
+    ax.xaxis.set_major_formatter(ticker.FuncFormatter(tick_formatter))
 
 def format_labels_and_ticks_v(ax, vert_label):
     # add labels
