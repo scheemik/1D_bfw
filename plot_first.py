@@ -59,7 +59,7 @@ for arr in arrays:
     file.close
 
 if sbp.plot_spacetime:
-    hf.plot_z_vs_t(z, arrays['t_array'], T, arrays['psi_g_array'], arrays['BP_array'], k, m, omega, sbp.z0_dis, sbp.zf_dis, title_str=run_name)
+    hf.plot_z_vs_t(z, arrays['t_array'], T, arrays['psi_g_array'], arrays['BP_array'], k, m, omega, sbp.z0_dis, sbp.zf_dis, plot_full_domain=sbp.plot_full_domain, nT=sbp.nT, title_str=run_name)
 
 if sbp.plot_wavespace:
     hf.plot_k_vs_t(ks, arrays['t_array'], T, arrays['psi_c_reals'], arrays['psi_c_imags'], k, m, omega, title_str=run_name)

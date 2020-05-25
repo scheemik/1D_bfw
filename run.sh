@@ -14,7 +14,7 @@ DATETIME=`date +"%Y-%m-%d_%Hh%M"`
 # VER = 1
 #	-> run the script
 # VER = 2
-#	-> plot z vs. t and k vs. t for Psi
+#	-> plot first (z vs. t and k vs. t for Psi)
 # VER = 3
 #	-> merge, plot frames, create gif, create mp4, etc
 

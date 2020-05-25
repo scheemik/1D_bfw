@@ -129,7 +129,7 @@ def plot_v_profiles(BP_array, bf_array, sp_array, z, omega=None, z0_dis=None, zf
 
 ###############################################################################
 
-def plot_z_vs_t(z, t_array, T, w_array, BP_array, k, m, omega, z0_dis=None, zf_dis=None, c_map='RdBu_r', title_str='Forced 1D Wave'):
+def plot_z_vs_t(z, t_array, T, w_array, BP_array, k, m, omega, z0_dis=None, zf_dis=None, plot_full_domain=True, nT=0.0, c_map='RdBu_r', title_str='Forced 1D Wave'):
     # Set aspect ratio of overall figure
     w, h = mpl.figure.figaspect(0.5)
     # This dictionary makes each subplot have the desired ratios
@@ -140,7 +140,6 @@ def plot_z_vs_t(z, t_array, T, w_array, BP_array, k, m, omega, z0_dis=None, zf_d
     fig, axes = plt.subplots(figsize=(w,h), nrows=1, ncols=2, gridspec_kw=plot_ratios, sharey=True)
     #
     plot_BP(axes[0], BP_array, z, omega)
-    add_dis_bounds(axes[0], z0_dis, zf_dis)
     #
     xmesh, ymesh = quad_mesh(x=t_array/T, y=z)
     im = axes[1].pcolormesh(xmesh, ymesh, w_array, cmap=c_map)
@@ -153,6 +152,14 @@ def plot_z_vs_t(z, t_array, T, w_array, BP_array, k, m, omega, z0_dis=None, zf_d
     # Add colorbar to im
     cbar = plt.colorbar(im)#, format=ticker.FuncFormatter(latex_exp))
     cbar.ax.ticklabel_format(style='sci', scilimits=(-2,2), useMathText=True)
+    #
+    if plot_full_domain:
+        add_dis_bounds(axes[0], z0_dis, zf_dis)
+    else:
+        axes[0].set_ylim([z0_dis,zf_dis])
+        axes[1].set_ylim([z0_dis,zf_dis])
+        axes[1].set_xlim([nT,t_array[-1]/T])
+    #
     axes[1].set_xlabel(r'$t/T$')
     # axes[1].set_title(r'$w$ (m/s)')
     axes[1].set_title(r'$\Psi$ (m$^2$/s)')
