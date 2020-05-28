@@ -169,16 +169,12 @@ def plot_swath(z, T_array, swath_array, c_map='RdBu_r', title_str='Forced 1D Wav
     # axes[1].set_title(r'$w$ (m/s)')
     axes.set_title(r'$\Psi$ (m$^2$/s)')
     fig.suptitle(r'%s, swath' %(title_str))
-    plt.show()
     plt.savefig('f_1D_wave_swath.png')
+    plt.show()
 
 def calc_I_and_T(i_I, i_T, k, t_array, data_array, t_interval_I, t_interval_T):
     # This returns the root mean square values of I and T
     #   I'm using arbitrary time intervals, i.e. t_interval_I=(I_t_i, I_t_f)
-    #
-    # # Square of data at the two choosen depths
-    # I_slice = np.square(data_array[i_I])
-    # T_slice = np.square(data_array[i_T])
     # Take data at the two choosen depths
     I_slice = data_array[i_I]
     T_slice = data_array[i_T]
@@ -190,13 +186,24 @@ def calc_I_and_T(i_I, i_T, k, t_array, data_array, t_interval_I, t_interval_T):
     # Filter to choosen times
     I_slice = I_slice[ti_I_i:ti_I_f]
     T_slice = T_slice[ti_T_i:ti_T_f]
-    # # Mean and square root
-    # I = np.sqrt(np.mean(I_slice))
-    # T = np.sqrt(np.mean(T_slice))
     # Find maximum
     I = np.max(I_slice)
     T = np.max(T_slice)
     return I, T
+
+def calc_T(i_T, k, t_array, data_array, t_interval_T):
+    # This returns the root mean square values of I and T
+    #   I'm using arbitrary time intervals, i.e. t_interval_I=(I_t_i, I_t_f)
+    # Take data at the choosen depth
+    T_slice = data_array[i_T]
+    # Find indicies of choosen time interval
+    ti_T_i = take_closest(t_array, t_interval_T[0])
+    ti_T_f = take_closest(t_array, t_interval_T[1])
+    # Filter to choosen times
+    T_slice = T_slice[ti_T_i:ti_T_f]
+    # Find maximum
+    T = np.max(T_slice)
+    return T
 
 ###############################################################################
 # Save arrays to files
@@ -212,7 +219,8 @@ for arr in arrays:
 
 print(arrays['t_array'])
 print('T=',T)
-print(arrays['t_array']/T)
+T_array = arrays['t_array']/T
+print(T_array)
 
 # Find indices of closest values of z to z_I and z_T
 i_I = take_closest(z, z_I)
@@ -220,14 +228,14 @@ i_T = take_closest(z, z_T)
 
 # plot_I_and_T(z, i_I, i_T, arrays['t_array']/T, arrays['psi_g_array'], k, m, omega)
 
-# I, T = calc_I_and_T(i_I, i_T, k, arrays['t_array']/T, arrays['psi_g_array'], (13.0,15.0), (13.0,15.0))
+T = calc_T(i_T, k, T_array, arrays['psi_g_array'], (13.0,15.0))
 
-I2 = find_max_in_swath(z, i_I, k, arrays['t_array']/T, arrays['psi_g_array'], (13.0,15.0))
+I2 = find_max_in_swath(z, i_I, k, T_array, arrays['psi_g_array'], (13.0,15.0))
 
 # print("I' = ",I)
 # print("T' = ",T)
 # print("T'/I' = ",T/I)
 # print("")
 print("I2' = ",I2)
-# print("T' = ",T)
-# print("T'/I2' = ",T/I2)
+print("T' = ",T)
+print("T'/I2' = ",T/I2)

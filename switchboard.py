@@ -89,7 +89,7 @@ ks = z_basis.wavenumbers
 
 # Background profile in N_0
 n_steps = 1
-step_th = 3.5/m
+step_th = 1.0/m
 # BP_array = hf.BP_n_steps(n_steps, z, z0_dis, zf_dis, step_th)
 
 # Boundary forcing window 2
