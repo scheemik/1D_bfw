@@ -165,6 +165,7 @@ def plot_z_vs_t(z, t_array, T, w_array, BP_array, k, m, omega, z0_dis=None, zf_d
     axes[1].set_title(r'$\Psi$ (m$^2$/s)')
     param_formated_str = latex_exp(k)+', '+latex_exp(m)+', '+latex_exp(omega)
     fig.suptitle(r'%s, $(k,m,\omega)$=(%s)' %(title_str, param_formated_str))
+    plt.show()
     plt.savefig('f_1D_wave.png')
 
 def plot_k_vs_t(ks, t_array, T, real_array, imag_array, k, m, omega, c_map='RdBu_r', title_str='Forced 1D Wave'):
