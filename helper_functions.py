@@ -118,6 +118,7 @@ def plot_v_profiles(BP_array, bf_array, sp_array, z, omega=None, z0_dis=None, zf
     #
     axes[1].plot(bf_array, z, color=my_clrs['F_bf'], label='Boundary forcing')
     axes[1].plot(sp_array, z, color=my_clrs['F_sp'], label='Sponge layer')
+    axes[1].plot(make_DD_mask(z, z0_dis, zf_dis), z, color=my_clrs['black'], label='Display Domain Mask')
     add_dis_bounds(axes[1], z0_dis, zf_dis)
     axes[1].set_xlabel('Amplitude')
     #axes[1].set_ylabel(r'$z$')
@@ -165,7 +166,7 @@ def plot_z_vs_t(z, t_array, T, w_array, BP_array, k, m, omega, z0_dis=None, zf_d
     axes[1].set_title(r'$\Psi$ (m$^2$/s)')
     param_formated_str = latex_exp(k)+', '+latex_exp(m)+', '+latex_exp(omega)
     fig.suptitle(r'%s, $(k,m,\omega)$=(%s)' %(title_str, param_formated_str))
-    plt.show()
+    #plt.show()
     plt.savefig('f_1D_wave.png')
 
 def plot_k_vs_t(ks, t_array, T, real_array, imag_array, k, m, omega, c_map='RdBu_r', title_str='Forced 1D Wave'):

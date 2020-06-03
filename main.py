@@ -79,7 +79,7 @@ ks          = sbp.ks
 # problem.parameters['NU'] = nu
 # problem.parameters['KA'] = kappa
 # problem.parameters['N0'] = N_0
-problem = de.IVP(domain, variables=['psi', 'foo', 'psi_filtered'])
+problem = de.IVP(domain, variables=['psi', 'foo', 'psi_masked'])
 problem.parameters['NU'] = nu
 problem.parameters['f0'] = f_0
 problem.parameters['N0'] = N_0
@@ -190,7 +190,7 @@ problem.add_equation("dt( dz(dz(foo)) - (k**2)*foo ) + f0*(dz(dz(psi))) " \
 # LHS must be first-order in ['dt'], so I'll define a temp variable
 problem.add_equation("foo - dt(psi) = 0")
 # Create copy of psi which is masked to the display domain
-problem.add_equation("psi_filtered = DD_mask*psi")
+problem.add_equation("psi_masked = DD_mask*psi")
 
 # Build solver
 solver = problem.build_solver(de.timesteppers.SBDF2)
@@ -208,12 +208,13 @@ solver.stop_iteration = sbp.stop_iteration
 # u = solver.state['u']
 # w = solver.state['w']
 psi = solver.state['psi']
-psi_filtered = solver.state['psi_filtered']
+psi_masked = solver.state['psi_masked']
 
 # b['g'] = 0.0
 # u['g'] = 0.0
 # w['g'] = 0.0
 psi['g'] = 0.0
+psi_masked['g'] = 0.0
 
 ###############################################################################
 # Analysis
@@ -250,9 +251,13 @@ flow_log_message= sbp.flow_log_message
 # w_list = [np.copy(w['g'])]
 # t_list = [solver.sim_time]
 psi.set_scales(1)
-psi_gs = [np.copy(psi['g']).real] # Plotting functions require float64, not complex128
-psi_cr = [np.copy(psi['c']).real]
-psi_ci = [np.copy(psi['c']).imag]
+psi_gs = [np.copy(psi_masked['g']).real] # Plotting functions require float64, not complex128
+psi_cr = [np.copy(psi_masked['c']).real]
+psi_ci = [np.copy(psi_masked['c']).imag]
+# psi.set_scales(1)
+# psi_gs = [np.copy(psi['g']).real] # Plotting functions require float64, not complex128
+# psi_cr = [np.copy(psi['c']).real]
+# psi_ci = [np.copy(psi['c']).imag]
 t_list = [solver.sim_time]
 ###############################################################################
 # Main loop

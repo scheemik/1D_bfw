@@ -26,7 +26,7 @@ z0_dis = zf_dis - Lz_dis        # [m] The bottom of the displayed domain
 # Problem parameters
 A       = 2.0e-4                # []            Amplitude of boundary forcing
 N_0     = 1.0                   # [rad/s]       Reference stratification
-f_0     = 0.001                 # [s^-1]        Reference Coriolis parameter
+f_0     = 0.000                 # [s^-1]        Reference Coriolis parameter
 set_case= 1                     # Picks combination of variables to set in switch below
 if set_case == 1:
     lam_z   = Lz_dis / 4.0          # [m]           Vertical wavelength
