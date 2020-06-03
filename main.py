@@ -250,10 +250,11 @@ flow_log_message= sbp.flow_log_message
 # w.set_scales(1)
 # w_list = [np.copy(w['g'])]
 # t_list = [solver.sim_time]
-psi.set_scales(1)
-psi_gs = [np.copy(psi_masked['g']).real] # Plotting functions require float64, not complex128
-psi_cr = [np.copy(psi_masked['c']).real]
-psi_ci = [np.copy(psi_masked['c']).imag]
+store_this = psi_masked
+store_this.set_scales(1)
+psi_gs = [np.copy(store_this['g']).real] # Plotting functions require float64, not complex128
+psi_cr = [np.copy(store_this['c']).real]
+psi_ci = [np.copy(store_this['c']).imag]
 # psi.set_scales(1)
 # psi_gs = [np.copy(psi['g']).real] # Plotting functions require float64, not complex128
 # psi_cr = [np.copy(psi['c']).real]
@@ -275,10 +276,14 @@ try:
             # w.set_scales(1)
             # w_list.append(np.copy(w['g']))
             # t_list.append(solver.sim_time)
-            psi.set_scales(1)
-            psi_gs.append(np.copy(psi['g']).real)
-            psi_cr.append(np.copy(psi['c']).real)
-            psi_ci.append(np.copy(psi['c']).imag)
+            store_this.set_scales(1)
+            psi_gs.append(np.copy(store_this['g']).real)
+            psi_cr.append(np.copy(store_this['c']).real)
+            psi_ci.append(np.copy(store_this['c']).imag)
+            # si.set_scales(1)
+            # psi_gs.append(np.copy(psi['g']).real)
+            # psi_cr.append(np.copy(psi['c']).real)
+            # psi_ci.append(np.copy(psi['c']).imag)
             t_list.append(solver.sim_time)
         if solver.iteration % logger_cadence == 0:
             logger.info(iteration_str %(solver.iteration, solver.sim_time/time_factor, dt/time_factor))
